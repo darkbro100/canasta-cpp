@@ -8,7 +8,7 @@ int main() {
     srand(time(NULL));
     
     Canasta::Deck d = Canasta::Deck();
-    
+
     for(int i = 0; i < 52; i++) {
         int rank = (i % 13) + 1;
         Canasta::Suit s = static_cast<Canasta::Suit>(rand() % Canasta::Suit::DIAMONDS);
