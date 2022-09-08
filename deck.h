@@ -1,12 +1,15 @@
 #pragma once
-#include <vector>
+#include <stack>
 #include "card.h"
+#include <memory>
 
 namespace Canasta {
 class Deck {
 private:
-    std::vector<Card> cards;
+    std::stack<Card> cards;
 public:
-    Deck();
+    void addCard(const Card & card);
+    std::shared_ptr<Card> drawCard();
+    bool empty();
 };
 };

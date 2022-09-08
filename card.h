@@ -5,7 +5,7 @@
 
 namespace Canasta {
 
-static char FACES[3] = {'J', 'Q', 'K'};
+static char FACES[3] = {'K', 'Q', 'J'};
 
 enum Suit {
     CLUBS,
