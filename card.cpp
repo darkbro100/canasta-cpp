@@ -3,6 +3,18 @@
 
 namespace Canasta {
 
+    bool Card::isAce() {
+        return this->rank == 1;
+    }
+
+    bool Card::isFace() {
+        return this->rank > 10;
+    }
+
+    bool Card::isJoker() {
+        return this->rank == -1;
+    }
+
     int Card::getRank() {
         return this->rank;
     }
@@ -11,7 +23,42 @@ namespace Canasta {
         return this->s;
     }
 
+    Card &Card::operator=(Card &&c) noexcept {
+        this->rank = c.rank;
+        this->s = c.s;
+
+        // no idea if this is necessary
+        c.rank = 0;
+        c.s = static_cast<Suit>(0);
+
+        return *this;
+    }
+
+    Card::Card(Card &&c) noexcept {
+        rank = c.rank;
+        s = c.s;
+
+        c.rank = 0;
+        c.s = static_cast<Suit>(0);
+    }
+
+    Card::Card(Suit s, int rank) {
+        this->rank = rank;
+        this->s = s;
+    }
+
+    Card::Card(Card &c) {
+        this->rank = c.rank;
+        this->s = c.s;
+    }
+
     std::ostream &operator<<(std::ostream &os, Card &c) {
+
+        // handle joker here
+        if (c.getRank() == -1) {
+            os << "Joker";
+            return os;
+        }
 
         // append rank
         if (c.getRank() == 1) {

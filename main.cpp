@@ -1,30 +1,15 @@
 #include <iostream>
-#include <cstdlib>
-#include "card.h"
 #include "deck.h"
-#include <ctime>
-#include <memory>
 
 int main() {
-    srand(time(nullptr));
-    
+
+    // create deck, shuffle, then draw every card
     Canasta::Deck d = Canasta::Deck();
-
-    for(int i = 0; i < 52; i++) {
-        int rank = (i % 13) + 1;
-
-        Canasta::Suit s = static_cast<Canasta::Suit>(rand() % Canasta::Suit::DIAMONDS);
-        Canasta::Card c = Canasta::Card(s, rank);
-
-        std::cout << "ADded card " << c << std::endl;
-        d.addCard(c);
-    }
-
+    d.shuffle();
 
     while(!d.empty()) {
-        std::shared_ptr<Canasta::Card> ptr = d.drawCard();
-        std::cout << "drawing card... " << std::endl;
-        std::cout << *ptr << std::endl;
+        std::shared_ptr<Canasta::Card> c = d.drawCard();
+        std::cout << "drew: " << *c << std::endl;
     }
 
 }
