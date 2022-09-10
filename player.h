@@ -11,11 +11,14 @@ namespace Canasta {
     class Player {
     private:
         Deck * hand;
+        int points;
     public:
         Player();
         ~Player();
         Player(Player & p);
         Player(Player && p) noexcept;
+        int getPoints();
+        void setPoints(int points);
 
         Deck * getHand();
     };

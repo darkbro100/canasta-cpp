@@ -13,14 +13,18 @@
 namespace Canasta {
     class Game {
     private:
+        int currentPlayer;
+        int currentTurn;
         Deck * stockPile, * discardPile;
         Player ** players;
     public:
         Game();
         ~Game();
 
-        Deck * getStockPile();
+        void choosePlayer();
+        int getCurrentTurn();
 
+        Deck * getStockPile();
         Deck * getDiscardPile();
 
         /**
@@ -29,6 +33,8 @@ namespace Canasta {
          * @return Player object associated with the index
          */
         Player * getPlayer(int player);
+
+        void setup();
     };
 }
 

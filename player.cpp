@@ -14,7 +14,6 @@ namespace Canasta {
     }
 
     Player::Player(Player &p) {
-        std::cout << "copy constructor [player]" << std::endl;
         this->hand = new Deck(false);
         for(auto & it : *p.hand) {
             this->hand->addCard(it);
@@ -22,12 +21,19 @@ namespace Canasta {
     }
 
     Player::Player(Player &&p)  noexcept {
-        std::cout << "move constructor [player]" << std::endl;
         this->hand = p.hand;
         p.hand = nullptr;
     }
 
     Player::~Player() {
         delete hand;
+    }
+
+    void Player::setPoints(int points) {
+        this->points = points;
+    }
+
+    int Player::getPoints() {
+        return points;
     }
 }
