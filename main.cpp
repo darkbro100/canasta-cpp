@@ -1,15 +1,8 @@
 #include <iostream>
-#include "deck.h"
+#include "game.h"
+
+using namespace Canasta;
 
 int main() {
-
-    // create deck, shuffle, then draw every card
-    Canasta::Deck d = Canasta::Deck();
-    d.shuffle();
-
-    while(!d.empty()) {
-        std::shared_ptr<Canasta::Card> c = d.drawCard();
-        std::cout << "drew: " << *c << std::endl;
-    }
-
+    Game g;
 }

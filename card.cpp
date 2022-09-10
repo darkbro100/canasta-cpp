@@ -3,18 +3,6 @@
 
 namespace Canasta {
 
-    bool Card::isAce() {
-        return this->rank == 1;
-    }
-
-    bool Card::isFace() {
-        return this->rank > 10;
-    }
-
-    bool Card::isJoker() {
-        return this->rank == -1;
-    }
-
     int Card::getRank() {
         return this->rank;
     }
@@ -50,6 +38,22 @@ namespace Canasta {
     Card::Card(Card &c) {
         this->rank = c.rank;
         this->s = c.s;
+    }
+
+    bool Card::isWildcard() {
+        return rank == -1 || rank == 2;
+    }
+
+    bool Card::isNatural() {
+        return !isRedThree() && !isBlackThree() && !isWildcard();
+    }
+
+    bool Card::isRedThree() {
+        return rank == 3 && (s == Suit::DIAMONDS || s == Suit::HEARTS);
+    }
+
+    bool Card::isBlackThree() {
+        return rank == 3 && (s == Suit::CLUBS || s == Suit::SPADES);
     }
 
     std::ostream &operator<<(std::ostream &os, Card &c) {
