@@ -7,7 +7,6 @@ using namespace Canasta;
  * TODO: not sure if this will stay the same. dont know if i want to move the keyboard input into its own class/file or keep it how the way it is and pass the char code to the game object and have the game object handle the specific input there
  */
 static char code;
-
 static void handleInput() {
     std::cin >> code;
     code = (char) (std::tolower(code));

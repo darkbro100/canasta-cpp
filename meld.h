@@ -15,9 +15,24 @@ namespace Canasta {
         int rank;
     public:
         Meld(int rank) : Deck(false), rank(rank) {}
+
         void addCard(Card card) override;
+
         int getRank();
+
         bool isCanasta();
+    };
+
+    class RedThreeMeld : public Meld {
+    public:
+        RedThreeMeld() : Meld(3) {}
+        void addCard(Card card) override;
+    };
+
+    class BlackThreeMeld : public Meld {
+    public:
+        BlackThreeMeld() : Meld(3) {}
+        void addCard(Card card) override;
     };
 }
 

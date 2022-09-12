@@ -120,4 +120,13 @@ namespace Canasta {
 
         return c;
     }
+
+    void Deck::removeCard(std::vector<Card>::iterator it) {
+        cards.erase(it);
+    }
+
+    Card &Deck::operator[](int i) {
+        return cards.at(i);
+    }
+
 };

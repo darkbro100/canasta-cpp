@@ -56,6 +56,14 @@ namespace Canasta {
         return rank == 3 && (s == Suit::CLUBS || s == Suit::SPADES);
     }
 
+    bool Card::operator<(const Card & c) const {
+        return this->rank < c.rank;
+    }
+
+    bool Card::operator>(const Card & c) const {
+        return this->rank > c.rank;
+    }
+
     std::ostream &operator<<(std::ostream &os, Card &c) {
 
         // handle joker here

@@ -12,6 +12,15 @@ namespace Canasta {
         HELP,
         QUIT
     };
+    enum DrawCommands {
+        STOCK,
+        DISCARD
+    };
+    enum MeldCommands {
+        CREATE,
+        ADD,
+        NONE
+    };
 }
 
 #endif //CANASTA_CPP_UI_ENUMS_H

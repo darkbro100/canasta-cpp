@@ -52,6 +52,8 @@ namespace Canasta {
         bool isBlackThree();
 
         Card &operator=(Card &&c) noexcept ;
+        bool operator <(const Card & c) const;
+        bool operator >(const Card & c) const;
     };
 
     // easily print to stdout

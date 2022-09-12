@@ -37,9 +37,9 @@ namespace Canasta {
         // Turn related function calls
         void startTurn();
         void aiTurn();
-        void drawTurn();
-        void meldTurn();
-        void discardTurn();
+        void drawTurn(Player * p);
+        void meldTurn(Player * p);
+        void discardTurn(Player * p);
 
         /**
          * Get a player playing the game

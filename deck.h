@@ -19,6 +19,7 @@ namespace Canasta {
         std::shared_ptr<Card> topCard();
         int getWildCards();
 
+        void removeCard(std::vector<Card>::iterator it);
         void clear();
         std::vector<Card>::iterator begin();
         std::vector<Card>::iterator end();
@@ -28,6 +29,7 @@ namespace Canasta {
         Deck() : Deck(true) {}
         Deck(bool init);
 
+        Card & operator[](int);
         friend std::ostream &operator<<(std::ostream &os, Deck &d);
     };
 };

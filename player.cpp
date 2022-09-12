@@ -13,7 +13,7 @@ namespace Canasta {
     Player::Player() {
         hand = new Deck(false);
         points = 0;
-        melds = std::vector<Meld*>();
+        melds = std::vector<Meld *>();
     }
 
     Player::Player(Player &p) {
@@ -31,8 +31,8 @@ namespace Canasta {
 
         //copy melds over
         for (auto &meld: p.melds) {
-            Meld * copy = new Meld(meld->getRank());
-            for(auto & card : *meld)
+            Meld *copy = new Meld(meld->getRank());
+            for (auto &card: *meld)
                 copy->addCard(card);
             this->melds.push_back(copy);
         }
@@ -78,12 +78,18 @@ namespace Canasta {
         return nullptr;
     }
 
-    Meld *Player::createMeld(int rank) {
+    Meld *Player::createMeld(int rank, bool redThree, bool blackThree) {
         Meld *exists = getMeld(rank);
         if (exists)
             return exists;
 
-        exists = new Meld(rank);
+        if(redThree)
+            exists = new RedThreeMeld();
+        else if(blackThree)
+            exists = new BlackThreeMeld();
+        else
+            exists = new Meld(rank);
+
         melds.push_back(exists);
 
         return exists;
@@ -94,16 +100,20 @@ namespace Canasta {
         Meld m(card.getRank());
         m.addCard(card);
 
+        // we need to sort here because of how we check for melds, jokers need to be last in the iteration so it doesn't mess up meld calculations
+        std::sort(hand->begin(), hand->end(), std::greater<Card>());
         for (auto &it: *hand)
             m.addCard(it);
 
-        std::cout << "attempted meld: " << m << std::endl;
         return m.count() >= 3;
     }
 
     int Player::canCreateMeld() {
+
+        // we need to sort here because of how we check for melds, jokers need to be last in the iteration so it doesn't mess up meld calculations
+        std::sort(hand->begin(), hand->end(), std::greater<Card>());
         for (auto c1 = hand->begin(); c1 != hand->end(); c1++) {
-            Meld m(c1->getRank());
+            Meld m = c1->isBlackThree() ? BlackThreeMeld() : Meld(c1->getRank());
             m.addCard(*c1);
 
             for (auto c2 = hand->begin(); c2 != hand->end(); c2++) {
@@ -113,10 +123,66 @@ namespace Canasta {
                 m.addCard(*c2);
             }
 
-            if(m.count() >= 3)
+            if (m.count() >= 3)
                 return m.getRank();
         }
 
         return -1;
+    }
+
+    int Player::checkMeld() {
+        for (auto &m: melds) {
+            if(m->getRank() == 3) continue; // skip red and black threes
+
+            for (auto &card: *hand) {
+                if (card.isWildcard() || m->getRank() == card.getRank()) {
+                    return m->getRank();
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    void Player::drawCard(Deck *deck, bool takeAll) {
+        if (takeAll) {
+            while (!deck->empty()) {
+                std::shared_ptr<Card> c = deck->drawCard();
+                hand->addCard(*c);
+            }
+        } else {
+            std::shared_ptr<Card> c = deck->drawCard();
+            while(c->isRedThree()) {
+                getRedThreeMeld()->addCard(*c);
+
+                c = deck->drawCard();
+                if(!c)
+                    break;
+            }
+
+            hand->addCard(*c);
+        }
+    }
+
+    std::vector<Meld *> &Player::getMelds() {
+        return melds;
+    }
+
+    Meld * Player::getRedThreeMeld() {
+        for (auto &meld: melds) {
+            auto * redMeld = dynamic_cast<RedThreeMeld*>(meld);
+            if(redMeld) return redMeld;
+        }
+
+        return nullptr;
+    }
+
+    Meld *Player::getBlackThreeMeld() {
+        for (auto &meld: melds) {
+            auto * blackMeld = dynamic_cast<BlackThreeMeld*>(meld);
+            if(blackMeld) return blackMeld;
+        }
+
+        return nullptr;
     }
 }
