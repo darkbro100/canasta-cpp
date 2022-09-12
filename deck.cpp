@@ -64,6 +64,8 @@ namespace Canasta {
     }
 
     std::ostream &operator<<(std::ostream &os, Deck &d) {
+        os << "[ ";
+
         for (auto it = d.cards.begin(); it != d.cards.end(); it++) {
             os << *it;
 
@@ -71,6 +73,7 @@ namespace Canasta {
                 os << ", ";
             }
         }
+        os << " ]";
 
         return os;
     }
@@ -93,5 +96,28 @@ namespace Canasta {
 
     void Deck::clear() {
         cards.clear();
+    }
+
+    /**
+     * Same exact functionality as #drawCard, does not remove card from deck though
+     * @return Top card
+     */
+    std::shared_ptr<Card> Deck::topCard() {
+        if (cards.empty())
+            return nullptr;
+
+        Card &c = cards.at(cards.size() - 1);
+        std::shared_ptr<Card> ptr = std::make_shared<Card>(c);
+        return ptr;
+    }
+
+    int Deck::getWildCards() {
+        int c = 0;
+        for(auto & it : *this) {
+            if(it.isWildcard())
+                c++;
+        }
+
+        return c;
     }
 };

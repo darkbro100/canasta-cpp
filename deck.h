@@ -12,9 +12,12 @@ namespace Canasta {
         std::vector<Card> cards;
     public:
         void shuffle();
-        void addCard(Card card);
+
+        virtual void addCard(Card card);
 
         std::shared_ptr<Card> drawCard();
+        std::shared_ptr<Card> topCard();
+        int getWildCards();
 
         void clear();
         std::vector<Card>::iterator begin();

@@ -7,12 +7,14 @@
 
 #include "deck.h"
 #include "player.h"
+#include "ui_enums.h"
 
 #define MAX_PLAYERS 2
 
 namespace Canasta {
     class Game {
     private:
+        bool started;
         int currentPlayer;
         int currentTurn;
         Deck * stockPile, * discardPile;
@@ -26,6 +28,18 @@ namespace Canasta {
 
         Deck * getStockPile();
         Deck * getDiscardPile();
+        Player * getCurrentPlayer();
+
+        bool isStarted();
+
+        void start();
+
+        // Turn related function calls
+        void startTurn();
+        void aiTurn();
+        void drawTurn();
+        void meldTurn();
+        void discardTurn();
 
         /**
          * Get a player playing the game
