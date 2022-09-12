@@ -20,7 +20,25 @@ namespace Canasta {
     }
 
     int selectMeld(std::vector<Meld *> &melds, const char *initMsg) {
-        return 0;
+        std::cout << initMsg << std::endl;
+
+        int count = 0;
+        for(auto & m : melds) {
+            if(count == 0) {
+                count++;
+                continue;
+            }
+
+            std::cout << "[" << count << "]: " << *m << "\t";
+            count++;
+        }
+        std::cout << std::endl;
+
+        int select = handleInput();
+        if (select < 1 || select >= count)
+            return selectMeld(melds, initMsg);
+
+        return select;
     }
 
     int selectCard(Deck *deck, const char *initMsg) {

@@ -229,7 +229,7 @@ namespace Canasta {
                             it++;
 
                         // only start the meld
-                        if(m->count() >= 3)
+                        if (m->count() >= 3)
                             break;
                     }
 
@@ -268,14 +268,63 @@ namespace Canasta {
         if (cmd == MeldCommands::NONE)
             return;
 
-        switch(cmd) {
+        switch (cmd) {
             case ADD: {
-                std::cout << "[a] potential meld to create: " << meld << std::endl;
-                std::cout << "[a] potential meld to add to: " << addToMeld << std::endl;                break;
+                int selected = selectMeld(p->getMelds(), "Select a meld to add to.");
+                Meld *m = p->getMelds()[selected];
+
+                std::cout << "Selected meld: " << *m << std::endl;
+                selected = selectCard(p->getHand(), "Select a card to add to that meld.");
+
+                size_t temp = m->count();
+                Card &c = (*p->getHand())[selected];
+                m->addCard(c);
+
+                if (temp == m->count()) {
+                    std::cout << "Could not add card " << c << " to meld." << std::endl;
+                    meldTurn(p);
+                    break;
+                }
+
+                std::cout << "Successfully added card " << c << " to meld." << std::endl;
+                int i = 0;
+                for (auto it = p->getHand()->begin(); it != p->getHand()->end(); it++) {
+                    if (i == selected) {
+                        p->getHand()->removeCard(it);
+                        break;
+                    }
+                    i++;
+                }
+
+                break;
             }
             case CREATE: {
-                std::cout << "[c] potential meld to create: " << meld << std::endl;
-                std::cout << "[c] potential meld to add to: " << addToMeld << std::endl;
+                int selected = selectCard(p->getHand(), "Select a card to create a meld with.");
+                Card &c = (*p->getHand())[selected];
+                Meld m = c.isBlackThree() ? BlackThreeMeld() : Meld(c.getRank());
+
+                for (auto &it: *p->getHand())
+                    m.addCard(it);
+
+                if(m.count() < 3) {
+                    std::cout << "You cannot create a meld. The most you can do is " << m << std::endl;
+                    meldTurn(p);
+                    break;
+                }
+
+                Meld * realMeld = p->createMeld(c.getRank(), false, c.isBlackThree());
+                auto it = p->getHand()->begin();
+                while(it != p->getHand()->end()) {
+                    size_t tmp = realMeld->count();
+                    realMeld->addCard(*it);
+
+                    if(tmp != realMeld->count())
+                        p->getHand()->removeCard(it);
+                    else
+                        it++;
+                }
+
+                std::cout << "Created new meld: " << *realMeld << std::endl;
                 break;
             }
             default: {
