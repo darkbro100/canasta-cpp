@@ -6,6 +6,7 @@
 #define CANASTA_CPP_MELD_H
 
 #define CANASTA_COUNT 7
+#define MELD_COUNT 3
 
 #include "deck.h"
 

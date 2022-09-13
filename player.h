@@ -31,7 +31,7 @@ namespace Canasta {
          * @param deck Deck to draw from
          * @param takeAll If true, takes all the cards from the deck as opposed to only 1 (or more if red 3)
          */
-        void drawCard(Deck *deck, bool takeAll = false);
+        bool drawCard(Deck *deck, bool takeAll = false);
 
         Meld * getRedThreeMeld();
         Meld * getBlackThreeMeld();
@@ -77,7 +77,15 @@ namespace Canasta {
          */
         Deck *getHand();
 
+        /**
+         * Helper function to return the melds
+         */
         std::vector<Meld*> & getMelds();
+
+        /**
+         * @return True if the player can go out
+         */
+        bool canGoOut();
     };
 }
 

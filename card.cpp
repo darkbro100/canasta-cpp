@@ -3,6 +3,15 @@
 
 namespace Canasta {
 
+    int Card::getPoints() {
+        if(isRedThree())
+            return RED_THREE_POINTS;
+        if(isBlackThree())
+            return BLACK_THREE_POINTS;
+
+        return POINT_MAP.at(rank);
+    }
+
     int Card::getRank() {
         return this->rank;
     }
@@ -40,6 +49,10 @@ namespace Canasta {
         this->s = c.s;
     }
 
+    bool Card::canFreezeDiscard() {
+        return isWildcard() || isBlackThree();
+    }
+
     bool Card::isWildcard() {
         return rank == -1 || rank == 2;
     }
@@ -57,10 +70,20 @@ namespace Canasta {
     }
 
     bool Card::operator<(const Card & c) const {
+        if(rank == 2 || rank == -1)
+            return true;
+        if(c.rank == 2 || c.rank == -1)
+            return false;
+
         return this->rank < c.rank;
     }
 
     bool Card::operator>(const Card & c) const {
+        if(rank == 2 || rank == -1)
+            return false;
+        if(c.rank == 2 || c.rank == -1)
+            return true;
+
         return this->rank > c.rank;
     }
 

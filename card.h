@@ -2,10 +2,30 @@
 
 #include <string>
 #include <iostream>
+#include <map>
+
+#define RED_THREE_POINTS 100
+#define BLACK_THREE_POINTS 3
 
 namespace Canasta {
 
     static char FACES[3] = {'K', 'Q', 'J'};
+
+    static const std::map<int, int> POINT_MAP = {
+            {-1, 50},
+            {1, 20},
+            {2, 20},
+            {4, 5},
+            {5, 5},
+            {6, 5},
+            {7, 5},
+            {8, 10},
+            {9, 10},
+            {10, 10},
+            {11, 10},
+            {12, 10},
+            {13, 10}
+    };
 
     enum Suit {
         CLUBS,
@@ -21,10 +41,18 @@ namespace Canasta {
 
     public:
         Card(Suit s, int rank);
+
         Card(Canasta::Card &c);
-        Card(Canasta::Card && c) noexcept ;
+
+        Card(Canasta::Card &&c) noexcept;
 
         Suit getSuit();
+
+        /**
+         *
+         * @return Point value of the card
+         */
+        int getPoints();
 
         /**
          * @return Return rank, or value of the card
@@ -51,13 +79,21 @@ namespace Canasta {
          */
         bool isBlackThree();
 
-        Card &operator=(Card &&c) noexcept ;
-        bool operator <(const Card & c) const;
-        bool operator >(const Card & c) const;
+        /**
+         * @return True if this card can freeze the discard pile (black 3 & wildcard)
+         */
+        bool canFreezeDiscard();
+
+        Card &operator=(Card &&c) noexcept;
+
+        bool operator<(const Card &c) const;
+
+        bool operator>(const Card &c) const;
     };
 
     // easily print to stdout
     std::ostream &operator<<(std::ostream &os, Suit s);
+
     std::ostream &operator<<(std::ostream &os, Card &c);
 
 };

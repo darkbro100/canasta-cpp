@@ -40,6 +40,8 @@ namespace Canasta {
 
     Canasta::DrawCommands displayDrawOptions();
 
+    int displayShouldGoOut();
+
     /**
      * Prompts the user to select a card from a given deck. If the player selects an invalid card, the function will recursively call itself and repeat the process until the user selects the correct card.
      * @param deck Pointer to a deck
@@ -55,6 +57,13 @@ namespace Canasta {
  * @return The index selected
  */
     int selectMeld(std::vector<Meld *> &melds, const char *initMsg);
+
+    /**
+     * Will ask the user how many cards they want to initially create their meld with.
+     * @param maxAllowed Max number of cards they can meld with
+     * @return Amount of cards chosen for meld
+     */
+    int createMeldWith(int maxAllowed);
 }
 
 #endif //CANASTA_CPP_INPUT_HANDLER_H

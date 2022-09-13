@@ -105,7 +105,7 @@ namespace Canasta {
         for (auto &it: *hand)
             m.addCard(it);
 
-        return m.count() >= 3;
+        return m.count() >= MELD_COUNT;
     }
 
     int Player::canCreateMeld() {
@@ -123,7 +123,7 @@ namespace Canasta {
                 m.addCard(*c2);
             }
 
-            if (m.count() >= 3)
+            if (m.count() >= MELD_COUNT)
                 return m.getRank();
         }
 
@@ -144,7 +144,7 @@ namespace Canasta {
         return -1;
     }
 
-    void Player::drawCard(Deck *deck, bool takeAll) {
+    bool Player::drawCard(Deck *deck, bool takeAll) {
         if (takeAll) {
             while (!deck->empty()) {
                 std::shared_ptr<Card> c = deck->drawCard();
@@ -155,13 +155,16 @@ namespace Canasta {
             while(c->isRedThree()) {
                 getRedThreeMeld()->addCard(*c);
 
+                if(deck->empty())
+                    return true;
+
                 c = deck->drawCard();
-                if(!c)
-                    break;
             }
 
             hand->addCard(*c);
         }
+
+        return false;
     }
 
     std::vector<Meld *> &Player::getMelds() {
@@ -184,5 +187,22 @@ namespace Canasta {
         }
 
         return nullptr;
+    }
+
+    bool Player::canGoOut() {
+        bool hasCanasta = false;
+        for(auto & m : melds) {
+            if(m && m->isCanasta()) {
+                hasCanasta = true;
+                break;
+            }
+        }
+
+        // If we don't have a canasta, we cannot go out
+        if(!hasCanasta)
+            return false;
+
+        // If the player doesn't have anything in their hand, they can go out
+        return hand->empty();
     }
 }

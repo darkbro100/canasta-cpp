@@ -30,9 +30,11 @@ namespace Canasta {
         Deck * getDiscardPile();
         Player * getCurrentPlayer();
 
+        bool shouldStop();
         bool isStarted();
 
         void start();
+        void endGame();
 
         // Turn related function calls
         void startTurn();
@@ -49,6 +51,8 @@ namespace Canasta {
         Player * getPlayer(int player);
 
         void setup();
+
+        static void canAddToMelds(Player* player, std::vector<int> & ret);
     };
 }
 
