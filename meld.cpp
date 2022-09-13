@@ -32,6 +32,10 @@ namespace Canasta {
         return count() >= CANASTA_COUNT;
     }
 
+    bool Meld::isNaturalCanasta() {
+        return isCanasta() && getWildCards() == 0;
+    }
+
     void Canasta::RedThreeMeld::addCard(Canasta::Card card) {
         if (!card.isRedThree())
             return;

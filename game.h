@@ -16,6 +16,7 @@ namespace Canasta {
     private:
         bool started;
         int currentPlayer;
+        int startingPlayer;
         int currentTurn;
         Deck * stockPile, * discardPile;
         Player ** players;

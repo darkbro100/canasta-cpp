@@ -5,9 +5,6 @@ using namespace Canasta;
 
 /**
  * TODO:
- * - Add AI turns, right now the CPU just does nothing every turn.
- * - Add "Going out"
- * - Actually increment round counter, start keeping score of points
  * - Add in serialization of games
  * - Add in the remaining few edge cases
  *      - If the last card drawn from the stockpile is a red 3
@@ -27,6 +24,14 @@ static void handleInput() {
 int main() {
     Game g;
     g.setup();
+
+    Player * p = g.getPlayer(1);
+    p->getHand()->clear();
+    for(int i = 0; i < 7; i ++) {
+        Card c(Suit::CLUBS, 3);
+        p->getHand()->addCard(c);
+    }
+
     printf("Game setup!\n\nHit [y] to start, anything else to quit.\n");
 
     handleInput();

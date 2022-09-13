@@ -104,7 +104,7 @@ namespace Canasta {
         if (selected < MELD_COUNT || selected > maxAllowed) {
             std::cout << "Invalid amount of cards selected. Using " << MELD_COUNT << " cards to start with."
                       << std::endl;
-            selected = 3;
+            selected = MELD_COUNT;
         }
 
         return selected;

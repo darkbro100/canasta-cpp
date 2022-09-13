@@ -13,6 +13,7 @@ namespace Canasta {
         std::vector<Meld *> melds;
         Deck *hand;
         int points;
+        bool isOut;
     public:
         Player();
 
@@ -22,7 +23,18 @@ namespace Canasta {
 
         Player(Player &&p) noexcept;
 
+        /**
+         * @return Points the player has earned
+         */
         int getPoints();
+
+        bool isPlayerOut();
+        void setIsOut(bool out);
+
+        /**
+         * @return Counts the points the player has
+         */
+        int calculatePoints();
 
         void setPoints(int points);
 

@@ -69,23 +69,23 @@ namespace Canasta {
         }
 
         // after players have received their cards, add red 3s to the correct "meld"
-        for (auto it = players[0]->getHand()->begin(); it != players[0]->getHand()->end(); it++) {
-            if (it->isRedThree()) {
-                players[0]->getRedThreeMeld()->addCard(*it);
-                players[0]->getHand()->removeCard(it);
-            }
-        }
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            Player *p = players[i];
 
-        for (auto it = players[1]->getHand()->begin(); it != players[1]->getHand()->end(); it++) {
-            if (it->isRedThree()) {
-                players[1]->getRedThreeMeld()->addCard(*it);
-                players[1]->getHand()->removeCard(it);
+            auto it = p->getHand()->begin();
+            while (it != p->getHand()->end()) {
+                if (it->isRedThree()) {
+                    p->getRedThreeMeld()->addCard(*it);
+                    p->getHand()->removeCard(it);
+                } else {
+                    it++;
+                }
             }
         }
 
         // sort both players hands (for looks lol)
-        std::sort(players[0]->getHand()->begin(), players[0]->getHand()->end(), std::greater<Card>());
-        std::sort(players[1]->getHand()->begin(), players[1]->getHand()->end(), std::greater<Card>());
+        for (int i = 0; i < MAX_PLAYERS; i++)
+            std::sort(players[i]->getHand()->begin(), players[i]->getHand()->end(), std::greater<Card>());
 
         std::shared_ptr<Card> c = stockPile->drawCard();
         discardPile->addCard(*c);
@@ -103,13 +103,17 @@ namespace Canasta {
     }
 
     void Game::choosePlayer() {
-        if (currentTurn != 1) {
-            int p1 = players[0]->getPoints();
-            int p2 = players[1]->getPoints();
-            currentPlayer = (p1 > p2 ? 0 : (p2 > p1 ? 1 : randomPlayer()));
-        } else {
+        if (currentTurn == 1) {
             currentPlayer = randomPlayer();
+            startingPlayer = currentPlayer;
+            return;
         }
+
+        int p1 = players[0]->getPoints();
+        int p2 = players[1]->getPoints();
+
+        currentPlayer = (p1 > p2 ? 0 : (p2 > p1 ? 1 : randomPlayer()));
+        startingPlayer = currentPlayer;
     }
 
     Player *Game::getCurrentPlayer() {
@@ -142,6 +146,7 @@ namespace Canasta {
                 return;
         }
 
+        std::cout << "Current Round: " << currentTurn << std::endl;
         std::cout << "Your Hand: " << *players[0]->getHand() << std::endl;
         std::cout << "CPU Hand: " << *players[1]->getHand() << std::endl << std::endl;
 
@@ -176,9 +181,10 @@ namespace Canasta {
         } else { // Human player
 
             //Check if player can go out and ask them if they want to
-            if(p->canGoOut()) {
+            if (p->canGoOut()) {
                 int shouldQuit = displayShouldGoOut();
-                if(shouldQuit == 1) {
+                if (shouldQuit == 1) {
+                    p->setIsOut(true);
                     endGame();
                     return;
                 }
@@ -201,6 +207,25 @@ namespace Canasta {
         currentPlayer++;
         if (currentPlayer >= MAX_PLAYERS)
             currentPlayer = 0;
+
+        if (currentPlayer == startingPlayer) {
+            currentTurn++;
+            std::cout << "==== ROUND OVER ====" << std::endl;
+            for (int i = 0; i < MAX_PLAYERS; i++) {
+                p = players[i];
+
+                int points = p->getPoints();
+                int earned = p->calculatePoints();
+                p->setPoints(earned + points);
+
+                const char *str = (i == 0 ? "Player" : "AI");
+                std::cout << str << " earned " << earned << " points this round." << std::endl;
+                std::cout << str << " earned " << p->getPoints() << " points in total." << std::endl;
+                std::cout << std::endl;
+            }
+            std::cout << std::endl;
+            choosePlayer();
+        }
     }
 
     bool Game::isStarted() {
@@ -264,7 +289,7 @@ namespace Canasta {
         draw:
         std::vector<Card>::iterator oldEnd = p->getHand()->end();
         bool shouldEnd = p->drawCard(stockPile, false);
-        if(shouldEnd) {
+        if (shouldEnd) {
             endGame();
             return;
         }
@@ -351,9 +376,10 @@ namespace Canasta {
             }
             default: {
                 std::cout << "Unknown command..." << std::endl;
-                meldTurn(p);
+                break;
             }
         }
+        meldTurn(p);
     }
 
     void Game::discardTurn(Player *p) {
@@ -439,7 +465,7 @@ namespace Canasta {
             } else {
                 std::vector<Card>::iterator oldEnd = ai->getHand()->end();
                 bool shouldEnd = ai->drawCard(stockPile);
-                if(shouldEnd) {
+                if (shouldEnd) {
                     endGame();
                     return;
                 }
@@ -483,7 +509,7 @@ namespace Canasta {
 
             if (!melds.empty()) {
                 for (int i: melds) {
-                    Meld *meld = ai->getMeld(i);
+                    Meld *meld = i == 3 ? ai->getBlackThreeMeld() : ai->getMeld(i);
                     if (!meld)
                         continue;
 
@@ -584,8 +610,9 @@ namespace Canasta {
                 ai->getHand()->removeCard(lowest);
             }
         } else {
-            //TODO: implement ending game
-            stream << "The AI chose to go out.";
+            ai->setIsOut(true);
+            std::cout << "The AI chose to go out." << std::endl;
+            endGame();
         }
 
         // print stringstream to stdout after
@@ -598,11 +625,19 @@ namespace Canasta {
 
                 //create a quick copy
                 Meld copy(m->getRank());
-                for (auto &c: *m) copy.addCard(c);
+                std::shared_ptr<Card> top = m->topCard();
+                if (top && top->isRedThree())
+                    copy = RedThreeMeld();
+                else if (top && top->isBlackThree())
+                    copy = BlackThreeMeld();
+
+                for (auto &c: *m)
+                    copy.addCard(c);
 
                 for (auto &c: *player->getHand()) {
                     size_t tmp = copy.count();
                     copy.addCard(c);
+
                     if (tmp != copy.count())
                         ret.push_back(copy.getRank());
                 }
@@ -611,14 +646,14 @@ namespace Canasta {
     }
 
     bool Game::shouldStop() {
-        if(stockPile->count() == 1 && stockPile->topCard()->isRedThree())
+        if (stockPile->count() == 1 && stockPile->topCard()->isRedThree())
             return true;
 
-        if(stockPile->empty()) {
+        if (stockPile->empty()) {
             std::shared_ptr<Card> top = discardPile->topCard();
 
-            Player * p1 = players[0];
-            Player * p2 = players[1];
+            Player *p1 = players[0];
+            Player *p2 = players[1];
 
             bool canUse1 = p1->canCreateMeld(*top) || p1->getMeld(top->getRank());
             bool canUse2 = p2->canCreateMeld(*top) || p1->getMeld(top->getRank());
@@ -630,7 +665,29 @@ namespace Canasta {
     }
 
     void Game::endGame() {
-        std::cout << "Game over!" << std::endl;
         started = false;
+
+        // set player points here forcefully
+        int winner;
+        int winnerPoints = 0;
+
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            const char *str = (i == 0 ? "Player" : "AI");
+
+            Player *p = players[i];
+            int points = p->getPoints();
+            int earned = p->calculatePoints();
+            p->setPoints(earned + points);
+
+            if(points > winnerPoints) {
+                winner = i;
+                winnerPoints = p->getPoints();
+            }
+
+            std::cout << str << " final points: " << p->getPoints() << std::endl;
+        }
+
+        const char *str = (winner == 0 ? "Player" : "AI");
+        std::cout << "Game over! " << str << " won!" << std::endl;
     }
 }

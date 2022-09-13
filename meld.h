@@ -21,6 +21,7 @@ namespace Canasta {
 
         int getRank();
 
+        bool isNaturalCanasta();
         bool isCanasta();
     };
 
