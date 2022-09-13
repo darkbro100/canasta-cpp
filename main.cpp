@@ -24,14 +24,6 @@ static void handleInput() {
 int main() {
     Game g;
     g.setup();
-
-    Player * p = g.getPlayer(1);
-    p->getHand()->clear();
-    for(int i = 0; i < 7; i ++) {
-        Card c(Suit::CLUBS, 3);
-        p->getHand()->addCard(c);
-    }
-
     printf("Game setup!\n\nHit [y] to start, anything else to quit.\n");
 
     handleInput();

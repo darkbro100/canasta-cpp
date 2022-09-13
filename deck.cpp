@@ -20,9 +20,11 @@ namespace Canasta {
         if (cards.empty())
             return nullptr;
 
-        Card &c = cards.at(cards.size() - 1);
+        auto it = --cards.end();
+        Card c(*it);
         std::shared_ptr<Card> ptr = std::make_shared<Card>(c);
-        cards.erase(cards.end());
+        cards.erase(it);
+
         return ptr;
     }
 
@@ -106,8 +108,10 @@ namespace Canasta {
         if (cards.empty())
             return nullptr;
 
-        Card &c = cards.at(cards.size() - 1);
+        auto it = --cards.end();
+        Card c(*it);
         std::shared_ptr<Card> ptr = std::make_shared<Card>(c);
+
         return ptr;
     }
 
