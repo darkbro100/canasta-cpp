@@ -1,14 +1,15 @@
 #include <iostream>
 #include "game.h"
 #include "game_serializer.h"
+#include <fstream>
 
 using namespace Canasta;
 
 /**
  * TODO:
  * - Add help menu
- * - Add in serialization of games
  * - Add game saving (ties into serialization)
+ *
  */
 
 /**
@@ -21,52 +22,18 @@ static void handleInput() {
 }
 
 int main() {
-    std::stringstream  stream;
-
     Game g;
     g.setup();
 
-    Game copy;
-    copy.getStockPile()->clear();
+    printf("Game setup!\n\nHit [y] to start, anything else to quit.\n");
 
-    Player * p = g.getCurrentPlayer();
-
-    Meld * m = p->createMeld(5);
-    m->addCard(Card(Suit::CLUBS, 5));
-    m->addCard(Card(Suit::CLUBS, 5));
-    m->addCard(Card(Suit::CLUBS, 5));
-
-    m = p->createMeld(7);
-    m->addCard(Card(Suit::CLUBS, 7));
-    m->addCard(Card(Suit::CLUBS, 7));
-    m->addCard(Card(Suit::CLUBS, 7));
-    m->addCard(Card(Suit::CLUBS, 7));
-
-    m = p->getRedThreeMeld();
-    m->addCard(Card(Suit::HEARTS, 3));
-
-    serializeGame(g, stream);
-    std::cout << "SERIALIZED GAME:" << std::endl;
-    std::cout << stream.str() << std::endl;
-
-    std::istringstream  istream(stream.str());
-    deserializeGame(copy, istream);
-    std::cout << "DESERIALIZED GAME:" << std::endl;
-
-    std::stringstream nstream;
-    serializeGame(copy, nstream);
-    std::cout << nstream.str() << std::endl;
-
-//    printf("Game setup!\n\nHit [y] to start, anything else to quit.\n");
-//
-//    handleInput();
-//    if (code == 'y') {
-//        g.start();
-//        while (g.isStarted()) {
-//            g.startTurn();
-//        }
-//    } else {
-//        std::cout << "Exiting..." << std::endl;
-//        exit(0);
-//    }
+    handleInput();
+    if (code == 'y') {
+        g.start();
+        while (g.isStarted())
+            g.startTurn();
+    } else {
+        std::cout << "Exiting..." << std::endl;
+        exit(0);
+    }
 }
