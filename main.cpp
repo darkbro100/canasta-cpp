@@ -16,6 +16,7 @@ using namespace Canasta;
  * TODO: not sure if this will stay the same. dont know if i want to move the keyboard input into its own class/file or keep it how the way it is and pass the char code to the game object and have the game object handle the specific input there
  */
 static char code;
+
 static void handleInput() {
     std::cin >> code;
     code = (char) (std::tolower(code));
@@ -23,17 +24,21 @@ static void handleInput() {
 
 int main() {
     Game g;
-    g.setup();
 
-    printf("Game setup!\n\nHit [y] to start, anything else to quit.\n");
-
+    printf("Hit [y] if you would like to load in a game from a file\n");
     handleInput();
     if (code == 'y') {
-        g.start();
-        while (g.isStarted())
-            g.startTurn();
-    } else {
-        std::cout << "Exiting..." << std::endl;
-        exit(0);
+        printf("Please enter the name of the file.\n");
+        std::string fileName;
+        std::getline(std::cin >> std::ws, fileName);
+
+        g.getStockPile()->clear();
+        readFile(fileName.c_str(), g);
     }
+    g.start();
+    while (g.isStarted())
+        g.startTurn();
+
+    std::cout << "Exiting..." << std::endl;
+    return 0;
 }

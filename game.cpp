@@ -4,6 +4,7 @@
 
 #include "game.h"
 #include "input_handler.h"
+#include "game_serializer.h"
 #include <random>
 #include <algorithm>
 #include <sstream>
@@ -136,7 +137,10 @@ namespace Canasta {
 
         switch (code) {
             case SAVE:
-                std::cout << "Saving the game..." << std::endl;
+                std::cout << "Saving the game to ./game_dump.txt ..." << std::endl;
+                writeFile("./game_dump.txt", *this);
+                started = false;
+
                 return;
             case HELP:
                 std::cout << "Displaying help menu..." << std::endl;
@@ -160,7 +164,7 @@ namespace Canasta {
         for (auto &it: players[0]->getMelds()) {
             if (it->empty()) // the melds for both 3s will show up by default
                 continue;
-            std::cout << *it << " ";
+            std::cout << "[" << *it << "] ";
         }
         std::cout << std::endl;
 
@@ -168,7 +172,7 @@ namespace Canasta {
         for (auto &it: players[1]->getMelds()) {
             if (it->empty()) // the melds for both 3s will show up by default
                 continue;
-            std::cout << *it << " ";
+            std::cout << "[" << *it << "] ";
         }
         std::cout << std::endl << std::endl;
 
@@ -662,6 +666,9 @@ namespace Canasta {
 
         // if the top card on discard pile froze the pile, then game has to end
         std::shared_ptr<Card> top = discardPile->topCard();
+        if(!top) // if the discard pile is empty, then we do not need to stop
+            return false;
+
         if (top->canFreezeDiscard())
             return true;
 

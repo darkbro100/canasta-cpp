@@ -4,6 +4,7 @@
 
 #include "game_serializer.h"
 #include <cstring>
+#include <fstream>
 
 namespace Canasta {
 
@@ -73,7 +74,7 @@ namespace Canasta {
         return nullptr;
     }
 
-    void serializeGame(Game &game, std::stringstream &stream) {
+    void serializeGame(Game &game, std::ostream &stream) {
         int turn = game.getCurrentTurn();
         stream << "Round: " << turn << "\n\n";
 
@@ -99,10 +100,10 @@ namespace Canasta {
         stream << "Discard Pile: " << *game.getDiscardPile() << std::endl;
 
         const char *str = game.getCurrentPlayerIndex() == CPU_PLAYER ? "Computer" : "Human";
-        stream << "Next Player: " << str << std::endl;
+        stream << "Next Player: " << str;
     }
 
-    void deserializeGame(Game &game, std::istringstream &stream) {
+    void deserializeGame(Game &game, std::istream &stream) {
 
         const char *lastKey = nullptr;
         bool scanNext = false;
@@ -182,5 +183,21 @@ namespace Canasta {
             }
 
         } while (stream);
+    }
+
+    void readFile(const char *file, Game &game) {
+        std::ifstream stream;
+        stream.open(file);
+
+        deserializeGame(game, stream);
+        stream.close();
+    }
+
+    void writeFile(const char *file, Game &game) {
+        std::ofstream stream;
+        stream.open(file);
+
+        serializeGame(game, stream);
+        stream.close();
     }
 }

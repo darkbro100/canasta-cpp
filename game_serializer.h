@@ -38,6 +38,7 @@ namespace Canasta {
     void deserializeGame(Game & game, std::istringstream & stream);
 
     void readFile(const char * file, Game & game);
+    void writeFile(const char * file, Game & game);
 
 }
 
