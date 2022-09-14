@@ -26,26 +26,36 @@ int main() {
     Game g;
     g.setup();
 
+    Game copy;
+    copy.getStockPile()->clear();
+
     Player * p = g.getCurrentPlayer();
 
     Meld * m = p->createMeld(5);
+    m->addCard(Card(Suit::CLUBS, 5));
     m->addCard(Card(Suit::CLUBS, 5));
     m->addCard(Card(Suit::CLUBS, 5));
 
     m = p->createMeld(7);
     m->addCard(Card(Suit::CLUBS, 7));
     m->addCard(Card(Suit::CLUBS, 7));
+    m->addCard(Card(Suit::CLUBS, 7));
+    m->addCard(Card(Suit::CLUBS, 7));
+
+    m = p->getRedThreeMeld();
+    m->addCard(Card(Suit::HEARTS, 3));
 
     serializeGame(g, stream);
-    std::cout << stream.str();
+    std::cout << "SERIALIZED GAME:" << std::endl;
+    std::cout << stream.str() << std::endl;
 
     std::istringstream  istream(stream.str());
-    do {
-        std::string test;
-        istream >> test;
+    deserializeGame(copy, istream);
+    std::cout << "DESERIALIZED GAME:" << std::endl;
 
-        std::cout << test << std::endl;
-    } while(istream);
+    std::stringstream nstream;
+    serializeGame(copy, nstream);
+    std::cout << nstream.str() << std::endl;
 
 //    printf("Game setup!\n\nHit [y] to start, anything else to quit.\n");
 //

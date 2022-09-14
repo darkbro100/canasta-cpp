@@ -10,6 +10,8 @@
 #include "ui_enums.h"
 
 #define MAX_PLAYERS 2
+#define HUMAN_PLAYER 0
+#define CPU_PLAYER 1
 
 namespace Canasta {
     class Game {
@@ -26,11 +28,13 @@ namespace Canasta {
 
         void choosePlayer();
         int getCurrentTurn();
+        void setTurn(int turn);
 
         Deck * getStockPile();
         Deck * getDiscardPile();
 
         int getCurrentPlayerIndex();
+        void setCurrentPlayerIndex(int index);
         Player * getCurrentPlayer();
 
         bool shouldStop();

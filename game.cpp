@@ -31,6 +31,7 @@ namespace Canasta {
         players = new Player *[MAX_PLAYERS];
         for (int i = 0; i < MAX_PLAYERS; i++) {
             players[i] = new Player();
+            players[i]->createMeld(-1, true);
         }
     }
 
@@ -55,12 +56,9 @@ namespace Canasta {
         for (int i = 0; i < MAX_PLAYERS; i++)
             players[i]->setPoints(0);
 
+        // shuffle the deck a few times
         for (int i = 0; i < 3; i++)
             stockPile->shuffle();
-
-        // create "melds" for red 3s
-        players[0]->createMeld(-1, true);
-        players[1]->createMeld(-1, true);
 
         // draw 15 cards for each player
         for (int i = 0; i < 15; i++) {
@@ -191,8 +189,8 @@ namespace Canasta {
             //Check if player can go out and ask them if they want to
             if (p->canGoOut()) {
                 int shouldQuit = displayShouldGoOut();
-                if (shouldQuit == 1) {
-                    p->setIsOut(true);
+                p->setIsOut(shouldQuit == 1);
+                if(p->isPlayerOut()) {
                     endGame();
                     return;
                 }
@@ -226,7 +224,7 @@ namespace Canasta {
                 int earned = p->calculatePoints();
                 p->setPoints(earned + points);
 
-                const char *str = (i == 0 ? "Player" : "AI");
+                const char *str = (i == HUMAN_PLAYER ? "Player" : "AI");
                 std::cout << str << " earned " << earned << " points this round." << std::endl;
                 std::cout << str << " earned " << p->getPoints() << " points in total." << std::endl;
                 std::cout << std::endl;
@@ -685,7 +683,7 @@ namespace Canasta {
         int winnerPoints = 0;
 
         for (int i = 0; i < MAX_PLAYERS; i++) {
-            const char *str = (i == 0 ? "Player" : "AI");
+            const char *str = (i == HUMAN_PLAYER ? "Player" : "AI");
 
             Player *p = players[i];
             int points = p->getPoints();
@@ -700,11 +698,19 @@ namespace Canasta {
             std::cout << str << " final points: " << p->getPoints() << std::endl;
         }
 
-        const char *str = (winner == 0 ? "Player" : "AI");
+        const char *str = (winner == HUMAN_PLAYER ? "Player" : "AI");
         std::cout << "Game over! " << str << " won!" << std::endl;
     }
 
     int Game::getCurrentPlayerIndex() {
         return currentPlayer;
+    }
+
+    void Game::setTurn(int turn) {
+        this->currentTurn = turn;
+    }
+
+    void Game::setCurrentPlayerIndex(int index) {
+        this->currentPlayer = index;
     }
 }
