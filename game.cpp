@@ -125,6 +125,14 @@ namespace Canasta {
     }
 
     void Game::startTurn() {
+        if (shouldStop()) {
+            std::cout
+                    << "The game is ending because it is in a state where both players can no longer interact with the stock/discard piles."
+                    << std::endl;
+            endGame();
+            return;
+        }
+
         Player *p = this->getCurrentPlayer();
         PreCommands code = displayPreRound();
 
@@ -646,22 +654,27 @@ namespace Canasta {
     }
 
     bool Game::shouldStop() {
-        if (stockPile->count() == 1 && stockPile->topCard()->isRedThree())
+        if (stockPile->count() == 1 &&
+            stockPile->topCard()->isRedThree()) //game always has to end if the top card of stockpile is red three
             return true;
 
-        if (stockPile->empty()) {
-            std::shared_ptr<Card> top = discardPile->topCard();
+        // otherwise if the stockpile is not empty then we can continue fine
+        if (!stockPile->empty())
+            return false;
 
-            Player *p1 = players[0];
-            Player *p2 = players[1];
+        // if the top card on discard pile froze the pile, then game has to end
+        std::shared_ptr<Card> top = discardPile->topCard();
+        if (top->canFreezeDiscard())
+            return true;
 
-            bool canUse1 = p1->canCreateMeld(*top) || p1->getMeld(top->getRank());
-            bool canUse2 = p2->canCreateMeld(*top) || p1->getMeld(top->getRank());
+        Player *p1 = players[0];
+        Player *p2 = players[1];
 
-            return canUse1 || canUse2;
-        }
+        // determine if either player can either create a meld with that card, or add it to an existing meld
+        bool canUse1 = p1->canCreateMeld(*top) || p1->getMeld(top->getRank());
+        bool canUse2 = p2->canCreateMeld(*top) || p1->getMeld(top->getRank());
 
-        return false;
+        return canUse1 || canUse2;
     }
 
     void Game::endGame() {
@@ -679,7 +692,7 @@ namespace Canasta {
             int earned = p->calculatePoints();
             p->setPoints(earned + points);
 
-            if(points > winnerPoints) {
+            if (points > winnerPoints) {
                 winner = i;
                 winnerPoints = p->getPoints();
             }
@@ -689,5 +702,9 @@ namespace Canasta {
 
         const char *str = (winner == 0 ? "Player" : "AI");
         std::cout << "Game over! " << str << " won!" << std::endl;
+    }
+
+    int Game::getCurrentPlayerIndex() {
+        return currentPlayer;
     }
 }

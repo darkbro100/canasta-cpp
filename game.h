@@ -29,6 +29,8 @@ namespace Canasta {
 
         Deck * getStockPile();
         Deck * getDiscardPile();
+
+        int getCurrentPlayerIndex();
         Player * getCurrentPlayer();
 
         bool shouldStop();

@@ -173,11 +173,10 @@ namespace Canasta {
         } else {
             std::shared_ptr<Card> c = deck->drawCard();
             while (c->isRedThree()) {
-                getRedThreeMeld()->addCard(*c);
-
                 if (deck->empty())
                     return true;
 
+                getRedThreeMeld()->addCard(*c);
                 c = deck->drawCard();
             }
 

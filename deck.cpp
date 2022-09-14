@@ -66,16 +66,13 @@ namespace Canasta {
     }
 
     std::ostream &operator<<(std::ostream &os, Deck &d) {
-        os << "[ ";
-
         for (auto it = d.cards.begin(); it != d.cards.end(); it++) {
             os << *it;
 
             if (it != d.cards.end() - 1) {
-                os << ", ";
+                os << " ";
             }
         }
-        os << " ]";
 
         return os;
     }

@@ -1,15 +1,14 @@
 #include <iostream>
 #include "game.h"
+#include "game_serializer.h"
 
 using namespace Canasta;
 
 /**
  * TODO:
+ * - Add help menu
  * - Add in serialization of games
- * - Add in the remaining few edge cases
- *      - If the last card drawn from the stockpile is a red 3
- *      - Stockpile is empty and both players are unable to use the discard pile.
- *          - In this situation specifically, a player must use the discard pile to ensure the game continues
+ * - Add game saving (ties into serialization)
  */
 
 /**
@@ -22,18 +21,42 @@ static void handleInput() {
 }
 
 int main() {
+    std::stringstream  stream;
+
     Game g;
     g.setup();
-    printf("Game setup!\n\nHit [y] to start, anything else to quit.\n");
 
-    handleInput();
-    if (code == 'y') {
-        g.start();
-        while (g.isStarted()) {
-            g.startTurn();
-        }
-    } else {
-        std::cout << "Exiting..." << std::endl;
-        exit(0);
-    }
+    Player * p = g.getCurrentPlayer();
+
+    Meld * m = p->createMeld(5);
+    m->addCard(Card(Suit::CLUBS, 5));
+    m->addCard(Card(Suit::CLUBS, 5));
+
+    m = p->createMeld(7);
+    m->addCard(Card(Suit::CLUBS, 7));
+    m->addCard(Card(Suit::CLUBS, 7));
+
+    serializeGame(g, stream);
+    std::cout << stream.str();
+
+    std::istringstream  istream(stream.str());
+    do {
+        std::string test;
+        istream >> test;
+
+        std::cout << test << std::endl;
+    } while(istream);
+
+//    printf("Game setup!\n\nHit [y] to start, anything else to quit.\n");
+//
+//    handleInput();
+//    if (code == 'y') {
+//        g.start();
+//        while (g.isStarted()) {
+//            g.startTurn();
+//        }
+//    } else {
+//        std::cout << "Exiting..." << std::endl;
+//        exit(0);
+//    }
 }
