@@ -19,7 +19,7 @@ namespace Canasta {
 
         void addCard(Card card) override;
 
-        int getRank();
+        int getRank() const;
 
         bool isNaturalCanasta();
         bool isCanasta();

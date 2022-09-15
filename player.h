@@ -26,16 +26,21 @@ namespace Canasta {
         /**
          * @return Points the player has earned
          */
-        int getPoints();
+        int getPoints() const;
 
-        bool isPlayerOut();
+        bool isPlayerOut() const;
+
         void setIsOut(bool out);
 
         /**
-         * @return Counts the points the player has
+         * @return Calculates the points a player would earn
          */
         int calculatePoints();
 
+        /**
+         * Sets the player's points
+         * @param points  Points to set to
+         */
         void setPoints(int points);
 
         /**
@@ -45,8 +50,15 @@ namespace Canasta {
          */
         bool drawCard(Deck *deck, bool takeAll = false);
 
-        Meld * getRedThreeMeld();
-        Meld * getBlackThreeMeld();
+        /**
+         * @return The meld specifically for red three's
+         */
+        Meld *getRedThreeMeld();
+
+        /**
+         * @return The meld specifically for black three's
+         */
+        Meld *getBlackThreeMeld();
 
         /**
          * Get a meld that a player has made
@@ -92,12 +104,18 @@ namespace Canasta {
         /**
          * Helper function to return the melds
          */
-        std::vector<Meld*> & getMelds();
+        std::vector<Meld *> &getMelds();
 
         /**
          * @return True if the player can go out
          */
         bool canGoOut();
+
+        /**
+        * Checks which of the player's melds they can add to. Will be added to the supplied vector. Used for the AI calculating what melds to manipulate
+        * @param ret Reference to vector of card's ranks.
+        */
+        void canAddToMelds(std::vector<int> &ret);
     };
 }
 

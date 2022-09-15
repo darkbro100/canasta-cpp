@@ -3,53 +3,64 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include "ui_enums.h"
 
 #define RED_THREE_POINTS 100
 #define BLACK_THREE_POINTS 3
 
 namespace Canasta {
 
+    /**
+     * An array of characters representing the face cards. Specific to this translation unit
+     */
     static char FACES[3] = {'K', 'Q', 'J'};
 
+    /**
+     * A static map containing the point values of each card. Specific to this translation unit
+     */
     static const std::map<int, int> POINT_MAP = {
             {-1, 50},
-            {1, 20},
-            {2, 20},
-            {4, 5},
-            {5, 5},
-            {6, 5},
-            {7, 5},
-            {8, 10},
-            {9, 10},
+            {1,  20},
+            {2,  20},
+            {4,  5},
+            {5,  5},
+            {6,  5},
+            {7,  5},
+            {8,  10},
+            {9,  10},
             {10, 10},
             {11, 10},
             {12, 10},
             {13, 10}
     };
 
-    enum Suit {
-        CLUBS,
-        HEARTS,
-        SPADES,
-        DIAMONDS
-    };
-
     class Card {
-    private:
-        Suit s;
-        int rank;
-
     public:
+        /**
+         * Default constructor. Card MUST be constructed using a Suit and a Rank.
+         * @param s Suit
+         * @param rank Rank
+         */
         Card(Suit s, int rank);
 
+        /**
+         * Copy constructor
+         * @param c Card to copy from
+         */
         Card(Canasta::Card &c);
 
+        /**
+         * Move constructor
+         * @param c Rvalue reference to Card to move from
+         */
         Card(Canasta::Card &&c) noexcept;
 
+        /**
+         * @return Suit value of the card
+         */
         Suit getSuit();
 
         /**
-         *
          * @return Point value of the card
          */
         int getPoints();
@@ -84,16 +95,46 @@ namespace Canasta {
          */
         bool canFreezeDiscard();
 
+        /**
+         * Move assignment operator
+         * @param c Rvalue reference to move from
+         * @return Reference to this card instance
+         */
         Card &operator=(Card &&c) noexcept;
 
+        /**
+         * Less than operator for card. Used specifically for vector sorting
+         * @param c Card to compare to
+         * @return True if less than, false if greataer than (not entirely true, look at src implementation to see)
+         */
         bool operator<(const Card &c) const;
 
+        /**
+         * Greater than operator for card. Used specifically for vector sorting
+         * @param c Card to compare to
+         * @return True if greater than, false if less than (not entirely true, look at src implementation to see)
+         */
         bool operator>(const Card &c) const;
+
+    private:
+        Suit s;
+        int rank;
     };
 
-    // easily print to stdout
+    /**
+     * Easily be able to print to an ostream
+     * @param os ostream to print to
+     * @param s Suit to print
+     * @return Ostream
+     */
     std::ostream &operator<<(std::ostream &os, Suit s);
 
+    /**
+     * Easily be able to print to an ostream
+     * @param os ostream to print to
+     * @param c Card to print
+     * @return Ostream
+     */
     std::ostream &operator<<(std::ostream &os, Card &c);
 
 };

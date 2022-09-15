@@ -5,7 +5,7 @@
 #include "meld.h"
 
 namespace Canasta {
-    int Canasta::Meld::getRank() {
+    int Canasta::Meld::getRank() const {
         return rank;
     }
 

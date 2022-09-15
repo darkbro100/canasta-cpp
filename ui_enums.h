@@ -6,6 +6,12 @@
 #define CANASTA_CPP_UI_ENUMS_H
 
 namespace Canasta {
+    enum Suit {
+        CLUBS,
+        HEARTS,
+        SPADES,
+        DIAMONDS
+    };
     enum PreCommands {
         SAVE,
         TAKE,

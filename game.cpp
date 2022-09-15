@@ -9,6 +9,10 @@
 #include <algorithm>
 #include <sstream>
 
+/**
+ * static function for this translation unit. Used for generating which player will play first during a coin toss
+ * @return Player to move [0-1]
+ */
 static int randomPlayer() {
     std::random_device rd;
     std::mt19937 mt(rd());
@@ -26,6 +30,7 @@ namespace Canasta {
         currentTurn = 0;
         started = false;
         currentPlayer = 0;
+        startingPlayer = 0;
         stockPile = new Deck();
         discardPile = new Deck(false);
 
@@ -140,13 +145,11 @@ namespace Canasta {
                 std::cout << "Saving the game to ./game_dump.txt ..." << std::endl;
                 writeFile("./game_dump.txt", *this);
                 started = false;
-
                 return;
             case HELP:
                 std::cout << "Displaying help menu..." << std::endl;
                 return;
             case QUIT:
-                std::cout << "Quitting" << std::endl;
                 started = false;
                 return;
             case TAKE:
@@ -515,7 +518,7 @@ namespace Canasta {
             }
 
             std::vector<int> melds;
-            canAddToMelds(ai, melds);
+            ai->canAddToMelds(melds);
 
             if (!melds.empty()) {
                 for (int i: melds) {
@@ -627,32 +630,6 @@ namespace Canasta {
 
         // print stringstream to stdout after
         std::cout << stream.str() << std::endl;
-    }
-
-    void Game::canAddToMelds(Player *player, std::vector<int> &ret) {
-        for (auto &m: player->getMelds()) {
-            if (m) {
-
-                //create a quick copy
-                Meld copy(m->getRank());
-                std::shared_ptr<Card> top = m->topCard();
-                if (top && top->isRedThree())
-                    copy = RedThreeMeld();
-                else if (top && top->isBlackThree())
-                    copy = BlackThreeMeld();
-
-                for (auto &c: *m)
-                    copy.addCard(c);
-
-                for (auto &c: *player->getHand()) {
-                    size_t tmp = copy.count();
-                    copy.addCard(c);
-
-                    if (tmp != copy.count())
-                        ret.push_back(copy.getRank());
-                }
-            }
-        }
     }
 
     bool Game::shouldStop() {

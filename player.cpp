@@ -70,7 +70,7 @@ namespace Canasta {
         this->points = points;
     }
 
-    int Player::getPoints() {
+    int Player::getPoints() const {
         return points;
     }
 
@@ -84,7 +84,7 @@ namespace Canasta {
     }
 
     Meld *Player::createMeld(int rank, bool redThree, bool blackThree) {
-        Meld *exists = nullptr;
+        Meld *exists;
 
         if (redThree)
             exists = getRedThreeMeld();
@@ -226,36 +226,62 @@ namespace Canasta {
     }
 
     int Player::calculatePoints() {
-        int points = 0;
+        int ret = 0;
 
         if (isOut)
-            points += 100;
+            ret += 100;
 
         for (auto &m: melds) {
             if (!m)
                 continue;
 
             if (m->isNaturalCanasta())
-                points += 500;
+                ret += 500;
             else if (m->isCanasta())
-                points += 300;
+                ret += 300;
 
             for (auto &c: *m) {
-                points += c.getPoints();
+                ret += c.getPoints();
             }
         }
 
         for (auto &c: *hand)
-            points -= c.getPoints();
+            ret -= c.getPoints();
 
-        return points;
+        return ret;
     }
 
     void Player::setIsOut(bool out) {
         this->isOut = out;
     }
 
-    bool Player::isPlayerOut() {
+    bool Player::isPlayerOut() const {
         return this->isOut;
+    }
+
+    void Player::canAddToMelds(std::vector<int> &ret) {
+        for (auto &m: melds) {
+            if (m) {
+
+                //create a quick copy
+                Meld copy(m->getRank());
+                std::shared_ptr<Card> top = m->topCard();
+                if (top && top->isRedThree())
+                    copy = RedThreeMeld();
+                else if (top && top->isBlackThree())
+                    copy = BlackThreeMeld();
+
+                for (auto &c: *m)
+                    copy.addCard(c);
+
+                for (auto &c: *hand) {
+                    size_t tmp = copy.count();
+                    copy.addCard(c);
+
+                    if (tmp != copy.count())
+                        ret.push_back(copy.getRank());
+                }
+            }
+        }
     }
 }

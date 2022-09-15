@@ -9,13 +9,6 @@ namespace Canasta {
         cards.emplace_back(card.getSuit(), card.getRank());
     }
 
-    /**
-     * Draws the top card from the deck and removes it.
-     *
-     * TODO: will probably end up switching to just storing the cards as pointers tbh
-     *
-     * @returns Shared pointer to the card, otherwise nullptr if the deck is empty.
-     */
     std::shared_ptr<Card> Deck::drawCard() {
         if (cards.empty())
             return nullptr;
@@ -32,10 +25,6 @@ namespace Canasta {
         return cards.empty();
     }
 
-    /**
-     * Constructing a Deck
-     * @param init If init is true, the deck will be populated with all the cards needed to play Canasta. Otherwise, it will be an empty deck.
-     */
     Deck::Deck(bool init) {
         this->cards.reserve(
                 DECK_SIZE); //we always want to reserve DECK_SIZE amount of cards for our vector (avoid copy constructor)
@@ -97,10 +86,6 @@ namespace Canasta {
         cards.clear();
     }
 
-    /**
-     * Same exact functionality as #drawCard, does not remove card from deck though
-     * @return Top card
-     */
     std::shared_ptr<Card> Deck::topCard() {
         if (cards.empty())
             return nullptr;

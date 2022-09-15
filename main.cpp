@@ -34,7 +34,9 @@ int main() {
 
         g.getStockPile()->clear();
         readFile(fileName.c_str(), g);
-    }
+    } else
+        g.setup();
+
     g.start();
     while (g.isStarted())
         g.startTurn();
