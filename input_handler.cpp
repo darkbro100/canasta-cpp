@@ -68,11 +68,6 @@ namespace Canasta {
     }
 
     MeldCommands displayMeldOptions(bool addNew, bool addExist) {
-        if (!addNew && !addExist) {
-            std::cout << "Nothing can be done to current melds." << std::endl;
-            return MeldCommands::NONE;
-        }
-
         std::cout << meldMessages[0];
 
         for (int i = 1; i < 4; i++) {
@@ -86,7 +81,17 @@ namespace Canasta {
         }
 
         int code = handleInput();
-        return static_cast<Canasta::MeldCommands>(code - 1);
+        code--;
+
+        if(code == MeldCommands::CREATE && !addNew) {
+            std::cout << "Unknown command..." << std::endl;
+            return displayMeldOptions(addNew, addExist);
+        } else if(code == MeldCommands::ADD && !addExist) {
+            std::cout << "Unknown command..." << std::endl;
+            return displayMeldOptions(addNew, addExist);
+        }
+
+        return static_cast<Canasta::MeldCommands>(code);
     }
 
     DrawCommands displayDrawOptions() {

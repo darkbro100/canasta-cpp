@@ -8,7 +8,6 @@ using namespace Canasta;
 /**
  * TODO:
  * - Add help menu
- * - Add game saving (ties into serialization)
  *
  */
 

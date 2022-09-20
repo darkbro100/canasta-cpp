@@ -129,6 +129,8 @@ namespace Canasta {
     }
 
     void Game::startTurn() {
+
+        // if the game cannot progress any further, then we stop it here
         if (shouldStop()) {
             std::cout
                     << "The game is ending because it is in a state where both players can no longer interact with the stock/discard piles."
@@ -138,8 +140,9 @@ namespace Canasta {
         }
 
         Player *p = this->getCurrentPlayer();
-        PreCommands code = displayPreRound();
 
+        // Display pre-information
+        PreCommands code = displayPreRound();
         switch (code) {
             case SAVE:
                 std::cout << "Saving the game to ./game_dump.txt ..." << std::endl;
@@ -148,6 +151,7 @@ namespace Canasta {
                 return;
             case HELP:
                 std::cout << "Displaying help menu..." << std::endl;
+                helpMenu();
                 return;
             case QUIT:
                 started = false;
@@ -159,6 +163,7 @@ namespace Canasta {
                 return;
         }
 
+        // display information about this current turn
         std::cout << "Current Round: " << currentTurn << std::endl;
         std::cout << "Your Hand: " << *players[0]->getHand() << std::endl;
         std::cout << "CPU Hand: " << *players[1]->getHand() << std::endl << std::endl;
@@ -185,8 +190,8 @@ namespace Canasta {
                   << std::endl
                   << std::endl; // additional endl for a line space
 
-        //CPU players turn
-        if (currentPlayer == 1) {
+        //Do turn checking here
+        if (currentPlayer == CPU_PLAYER) {
 
             //calculate what the cpu should do here
             aiTurn();
@@ -197,7 +202,7 @@ namespace Canasta {
             if (p->canGoOut()) {
                 int shouldQuit = displayShouldGoOut();
                 p->setIsOut(shouldQuit == 1);
-                if(p->isPlayerOut()) {
+                if (p->isPlayerOut()) {
                     endGame();
                     return;
                 }
@@ -296,6 +301,7 @@ namespace Canasta {
             } else {
                 std::cout << "Unknown command..." << std::endl;
                 drawTurn(p);
+                return;
             }
         }
 
@@ -319,7 +325,13 @@ namespace Canasta {
         int addToMeld = p->checkMeld();
 
         // determine what the player wants to do with melds. if they choose to do nothing or can't do anything, stop here
-        MeldCommands cmd = displayMeldOptions(meld != -1, addToMeld != -1);
+        MeldCommands cmd;
+        if(meld == -1 && addToMeld == -1)
+            cmd = MeldCommands::NONE;
+        else
+            cmd = displayMeldOptions(meld != -1, addToMeld != -1);
+
+        // if the player still chose to do nothing for some reason, then stop
         if (cmd == MeldCommands::NONE)
             return;
 
@@ -643,7 +655,7 @@ namespace Canasta {
 
         // if the top card on discard pile froze the pile, then game has to end
         std::shared_ptr<Card> top = discardPile->topCard();
-        if(!top) // if the discard pile is empty, then we do not need to stop
+        if (!top) // if the discard pile is empty, then we do not need to stop
             return false;
 
         if (top->canFreezeDiscard())
@@ -696,5 +708,153 @@ namespace Canasta {
 
     void Game::setCurrentPlayerIndex(int index) {
         this->currentPlayer = index;
+    }
+
+    void Game::helpMenu() {
+
+        // tell the player they can only ask for help if it is their turn
+        if (getCurrentPlayerIndex() == CPU_PLAYER) {
+            std::cout << "It is the AIs turn right now! Wait until your turn!" << std::endl;
+            return;
+        }
+
+        Player *p = getPlayer(HUMAN_PLAYER);
+        Player *ai = getPlayer(CPU_PLAYER); // Get AI player
+
+        std::stringstream stream;
+
+        bool tookDiscard = false;
+
+        std::shared_ptr<Card> discardTop = discardPile->topCard();
+        Meld *canAddToMeld = p->getMeld(discardTop->getRank());
+        bool canUseDiscard = p->canCreateMeld(*discardTop);
+
+        // if the discard pile is not frozen, and we can do something with it
+        if (!discardTop->canFreezeDiscard() && (canAddToMeld || canUseDiscard)) {
+
+            // usually if you can interact with the discard pile in any kind of way it is beneficial
+            if (canAddToMeld) {
+                stream << "You can use the discard pile to add to meld: " << *canAddToMeld << std::endl;
+            } else {
+                stream << "You can use the discard pile to create a new meld entirely" << std::endl;
+            }
+
+            tookDiscard = true;
+        } else {
+            stream << "You cannot take from the discard pile, so you must draw from the stockpile." << std::endl;
+        }
+
+        // checks what meld the player can make
+        int canMake = p->canCreateMeld();
+        if (canMake != -1) {
+
+            // construct temporary meld to display to stdout
+            Meld m(canMake);
+            if(canMake == 3)
+                m = BlackThreeMeld();
+
+            for(auto & c : *p->getHand())
+                m.addCard(c);
+
+            stream << "You can create a meld: " << m << std::endl;
+        }
+
+        // checks what melds the player can add to
+        std::vector<int> melds;
+        p->canAddToMelds(melds);
+
+        // format melds to strstream
+        if (!melds.empty()) {
+            stream << "You can add to melds: ";
+
+            for(auto it = melds.begin(); it != melds.end(); it++) {
+                if(it != melds.begin())
+                    stream << ", ";
+
+                Meld * m = *it == 3 ? p->getBlackThreeMeld() : p->getMeld(*it);
+                stream << *m;
+            }
+            stream << std::endl;
+        }
+
+        if (p->getHand()->empty()) {
+            stream << "You cannot use the discard pile" << std::endl;
+        } else {
+            std::vector<Card>::iterator lowest = p->getHand()->end();
+            int lowestPoint = 1000;
+
+            for (auto it = p->getHand()->begin(); it != p->getHand()->end(); it++) {
+                if (ai->getMeld(it->getRank()) ||
+                    ai->canCreateMeld(*it)) //we do not want to discard cards that the human player has
+                    continue;
+
+                if (it->getPoints() < lowestPoint) {
+                    lowest = it;
+                    lowestPoint = it->getPoints();
+                }
+            }
+
+            // means that we couldn't initially find a card to pick from
+            if (lowest == p->getHand()->end() && !tookDiscard) {
+
+                discardTop = discardPile->topCard();
+                bool aiCanUse = ai->canCreateMeld(*discardTop);
+
+                // if the human can take from the discard pile, and we have a wildcard, freeze the discard pile
+                if (aiCanUse && p->getHand()->getWildCards() > 0) {
+                    for (auto &it: *p->getHand()) {
+                        if (it.isWildcard()) {
+                            stream << "Discard the " << it
+                                   << " to freeze the discard pile and prevent the AI from using it next turn"
+                                   << std::endl;
+                            break;
+                        }
+                    }
+                } else {
+                    lowestPoint = 1000;
+                    for (auto it = p->getHand()->begin(); it != p->getHand()->end(); it++) {
+                        if (it->getPoints() < lowestPoint) {
+                            lowestPoint = it->getPoints();
+                            lowest = it;
+                        }
+                    }
+                    stream << "Discard the " << *lowest
+                           << " because it's worth the least amount of points." << std::endl;
+                }
+            } else if (lowest == p->getHand()->end()) {
+                // means that we took from the discard pile, but every card in our hand is something the player can make a meld with.
+
+                // select card with the lowest point value
+                lowestPoint = 1000;
+                for (auto it = p->getHand()->begin(); it != p->getHand()->end(); it++) {
+                    if (it->isBlackThree() || it->isWildcard())
+                        continue;
+
+                    if (it->getPoints() < lowestPoint) {
+                        lowestPoint = it->getPoints();
+                        lowest = it;
+                    }
+                }
+
+                if (lowest != p->getHand()->end()) {
+                    stream << "Discard the " << *lowest
+                           << " because it's worth the least amount of points." << std::endl;
+                }
+            } else
+                stream << "Discard the " << *lowest
+                       << " because the AI does not have any melds of it and it is worth the least amount of points."
+                       << std::endl;
+
+        }
+
+        // if the player can go out, suggest what they should do
+        if (p->canGoOut()) {
+            if (p->getPoints() > ai->getPoints())
+                stream << "You can go out this turn and you should since you would win the game!" << std::endl;
+            else
+                stream << "You can go out this turn, but you would lose if you did." << std::endl;
+        }
+
+        std::cout << stream.str() << std::endl;
     }
 }

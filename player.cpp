@@ -278,7 +278,8 @@ namespace Canasta {
                     size_t tmp = copy.count();
                     copy.addCard(c);
 
-                    if (tmp != copy.count())
+                    // if the count of the meld has changed, and it's a valid meld, then add it to the return vector
+                    if (tmp != copy.count() && copy.count() >= MELD_COUNT)
                         ret.push_back(copy.getRank());
                 }
             }

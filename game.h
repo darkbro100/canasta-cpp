@@ -112,6 +112,11 @@ namespace Canasta {
         void aiTurn();
 
         /**
+         * Prints to the console what moves the player should make
+         */
+        void helpMenu();
+
+        /**
          * Called when the player (human) needs to draw a card
          * @param p Pointer to that player
          */
