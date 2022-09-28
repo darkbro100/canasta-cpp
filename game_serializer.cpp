@@ -27,6 +27,9 @@ namespace Canasta {
             rank = 10;
         } else {
             switch (c) {
+                case 'X':
+                    rank = 10;
+                    break;
                 case 'J':
                     rank = 11;
                     break;
@@ -58,6 +61,10 @@ namespace Canasta {
             case 'D':
                 suit = Suit::DIAMONDS;
                 break;
+            case '1':
+            case '2':
+                if (c == 'J')
+                    return {Suit::CLUBS, -1}; // edge case for how jokers are stored in kumar's serialization files.
             default:
                 suit = Suit::CLUBS;
                 break;
@@ -118,24 +125,26 @@ namespace Canasta {
             if (key) {
                 // we are modifying CPU data for the game
                 if (key == SERIALIZATION_KEYS[1]) {
-                    modifyingPlayer = game.getPlayer(1);
+                    modifyingPlayer = game.getPlayer(CPU_PLAYER);
                 } else if (key == SERIALIZATION_KEYS[2]) {
                     // we are modifying PLAYER data for the game
-                    modifyingPlayer = game.getPlayer(0);
+                    modifyingPlayer = game.getPlayer(HUMAN_PLAYER);
                 } else {
                     lastKey = key;
                     scanNext = true;
                 }
 
-//                std::cout << key << std::endl;
-
             } else if (scanNext) {
                 if (strcmp(lastKey, "Score:") == 0) {
-                    int score = std::stoi(test);
-                    modifyingPlayer->setPoints(score);
+                    try {
+                        int score = std::stoi(test);
+                        modifyingPlayer->setPoints(score);
+                    }catch(std::invalid_argument const & e) { } // don't need to print the exception, if stoi throws an exception it means that the input provided for the round/score was invalid
                 } else if (strcmp(lastKey, "Round:") == 0) {
-                    int round = std::stoi(test);
-                    game.setTurn(round);
+                    try {
+                        int round = std::stoi(test);
+                        game.setTurn(round);
+                    }catch(std::invalid_argument const & e) { } // don't need to print the exception, if stoi throws an exception it means that the input provided for the round/score was invalid
                 } else if (strcmp(lastKey, "Hand:") == 0) {
                     Deck *hand = modifyingPlayer->getHand();
                     Card c = parseCard(test);
@@ -185,7 +194,7 @@ namespace Canasta {
         } while (stream);
     }
 
-    void readFile(const char *file, Game &game) {
+    void loadGame(const char *file, Game &game) {
         std::ifstream stream;
         stream.open(file);
 
@@ -193,7 +202,7 @@ namespace Canasta {
         stream.close();
     }
 
-    void writeFile(const char *file, Game &game) {
+    void saveGame(const char *file, Game &game) {
         std::ofstream stream;
         stream.open(file);
 

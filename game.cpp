@@ -29,8 +29,8 @@ namespace Canasta {
     Game::Game() {
         currentTurn = 0;
         started = false;
-        currentPlayer = 0;
-        startingPlayer = 0;
+        currentPlayer = -1;
+        startingPlayer = -1;
         stockPile = new Deck();
         discardPile = new Deck(false);
 
@@ -98,8 +98,6 @@ namespace Canasta {
             c = stockPile->drawCard();
             discardPile->addCard(*c);
         }
-
-        choosePlayer();
     }
 
     int Game::getCurrentTurn() {
@@ -108,16 +106,32 @@ namespace Canasta {
 
     void Game::choosePlayer() {
         if (currentTurn == 1) {
-            currentPlayer = randomPlayer();
+            int toss = displayCoinToss();
+            int chosen = randomPlayer();
+            std::cout << "You chose " << (toss == 0 ? "heads" : "tails") << " and " << (toss == chosen ? "won" : "lost")
+                      << " the coin toss!" << std::endl;
+            currentPlayer = toss == chosen ? HUMAN_PLAYER : CPU_PLAYER;
             startingPlayer = currentPlayer;
             return;
         }
 
-        int p1 = players[0]->getPoints();
-        int p2 = players[1]->getPoints();
+        int p1 = players[HUMAN_PLAYER]->getPoints();
+        int p2 = players[CPU_PLAYER]->getPoints();
 
-        currentPlayer = (p1 > p2 ? 0 : (p2 > p1 ? 1 : randomPlayer()));
-        startingPlayer = currentPlayer;
+        if (p1 > p2) {
+            currentPlayer = HUMAN_PLAYER;
+            startingPlayer = currentPlayer;
+        } else if (p2 > p1) {
+            currentPlayer = CPU_PLAYER;
+            startingPlayer = currentPlayer;
+        } else {
+            int toss = displayCoinToss();
+            int chosen = randomPlayer();
+            std::cout << "You chose " << (toss == 0 ? "heads" : "tails") << " and " << (toss == chosen ? "won" : "lost")
+                      << " the coin toss!" << std::endl;
+            currentPlayer = toss == chosen ? HUMAN_PLAYER : CPU_PLAYER;
+            startingPlayer = currentPlayer;
+        }
     }
 
     Player *Game::getCurrentPlayer() {
@@ -129,7 +143,6 @@ namespace Canasta {
     }
 
     void Game::startTurn() {
-
         // if the game cannot progress any further, then we stop it here
         if (shouldStop()) {
             std::cout
@@ -139,14 +152,12 @@ namespace Canasta {
             return;
         }
 
-        Player *p = this->getCurrentPlayer();
-
         // Display pre-information
         PreCommands code = displayPreRound();
         switch (code) {
             case SAVE:
                 std::cout << "Saving the game to ./game_dump.txt ..." << std::endl;
-                writeFile("./game_dump.txt", *this);
+                saveGame("./game_dump.txt", *this);
                 started = false;
                 return;
             case HELP:
@@ -162,6 +173,12 @@ namespace Canasta {
                 std::cout << "Unknown command..." << std::endl;
                 return;
         }
+
+        // if the starting/current player has not been initialized, ensure we choose a player
+        if (startingPlayer == -1 && currentPlayer == -1)
+            choosePlayer();
+
+        Player *p = this->getCurrentPlayer();
 
         // display information about this current turn
         std::cout << "Current Round: " << currentTurn << std::endl;
@@ -184,11 +201,15 @@ namespace Canasta {
         }
         std::cout << std::endl << std::endl;
 
-        std::cout << "Stockpile (top): " << *stockPile->topCard() << " + " << stockPile->count() - 1 << " more"
-                  << std::endl;
-        std::cout << "Discard (top): " << *discardPile->topCard() << " + " << discardPile->count() - 1 << " more"
-                  << std::endl
-                  << std::endl; // additional endl for a line space
+        // only display stockpile and discard pile if they aren't empty
+        if (!stockPile->empty())
+            std::cout << "Stockpile (top): " << *stockPile->topCard() << " + " << stockPile->count() - 1 << " more"
+                      << std::endl;
+
+        if (!discardPile->empty())
+            std::cout << "Discard (top): " << *discardPile->topCard() << " + " << discardPile->count() - 1 << " more"
+                      << std::endl
+                      << std::endl; // additional endl for a line space
 
         //Do turn checking here
         if (currentPlayer == CPU_PLAYER) {
@@ -224,7 +245,7 @@ namespace Canasta {
         // change to next player
         currentPlayer++;
         if (currentPlayer >= MAX_PLAYERS)
-            currentPlayer = 0;
+            currentPlayer = HUMAN_PLAYER;
 
         if (currentPlayer == startingPlayer) {
             currentTurn++;
@@ -255,10 +276,10 @@ namespace Canasta {
      */
     void Game::drawTurn(Player *p) {
         std::shared_ptr<Card> discardTop = discardPile->topCard();
-        Meld *canAddToMeld = p->getMeld(discardTop->getRank());
-        bool canUseDiscard = p->canCreateMeld(*discardTop);
+        Meld *canAddToMeld = discardTop ? p->getMeld(discardTop->getRank()) : nullptr;
+        bool canUseDiscard = discardTop && p->canCreateMeld(*discardTop);
 
-        if (!discardTop->canFreezeDiscard() && (canAddToMeld || canUseDiscard)) {
+        if (discardTop && !discardTop->canFreezeDiscard() && (canAddToMeld || canUseDiscard)) {
             DrawCommands command = displayDrawOptions();
 
             if (command == DrawCommands::STOCK) {
@@ -326,7 +347,7 @@ namespace Canasta {
 
         // determine what the player wants to do with melds. if they choose to do nothing or can't do anything, stop here
         MeldCommands cmd;
-        if(meld == -1 && addToMeld == -1)
+        if (meld == -1 && addToMeld == -1)
             cmd = MeldCommands::NONE;
         else
             cmd = displayMeldOptions(meld != -1, addToMeld != -1);
@@ -446,8 +467,8 @@ namespace Canasta {
             bool tookDiscard = false;
 
             std::shared_ptr<Card> discardTop = discardPile->topCard();
-            Meld *canAddToMeld = ai->getMeld(discardTop->getRank());
-            bool canUseDiscard = ai->canCreateMeld(*discardTop);
+            Meld *canAddToMeld = discardTop ? ai->getMeld(discardTop->getRank()) : nullptr;
+            bool canUseDiscard = discardTop && ai->canCreateMeld(*discardTop);
 
             /**
              * Deciding what to do with drawing
@@ -456,7 +477,7 @@ namespace Canasta {
              * because it is technically "face down"
              */
             // if the discard pile is not frozen, and we can do something with it
-            if (!discardTop->canFreezeDiscard() && (canAddToMeld || canUseDiscard)) {
+            if (discardTop && !discardTop->canFreezeDiscard() && (canAddToMeld || canUseDiscard)) {
 
                 // usually if you can interact with the discard pile in any kind of way it is beneficial
                 if (canAddToMeld) {
@@ -645,36 +666,39 @@ namespace Canasta {
     }
 
     bool Game::shouldStop() {
-        if (stockPile->count() == 1 &&
-            stockPile->topCard()->isRedThree()) //game always has to end if the top card of stockpile is red three
+        //game always has to end if the stockpile contains *only* a red three
+        if (stockPile->count() == 1 && stockPile->topCard()->isRedThree())
             return true;
 
-        // otherwise if the stockpile is not empty then we can continue fine
-        if (!stockPile->empty())
-            return false;
-
-        // if the top card on discard pile froze the pile, then game has to end
-        std::shared_ptr<Card> top = discardPile->topCard();
-        if (!top) // if the discard pile is empty, then we do not need to stop
-            return false;
-
-        if (top->canFreezeDiscard())
+        // if the stockpile is empty and the discard pile is also empty (meaning we can't use the discard pile), then return true
+        if (stockPile->empty() && discardPile->empty())
             return true;
 
-        Player *p1 = players[0];
-        Player *p2 = players[1];
+        // if only the stockpile is empty we need to check if the game can continue
+        if (stockPile->empty()) {
+            // if the top card on discard pile froze the pile, then game has to end
+            std::shared_ptr<Card> top = discardPile->topCard();
+            if (!top || top->canFreezeDiscard()) //if the top card doesn't exist, or it can freeze the discard pile then the game must stop
+                return true;
 
-        // determine if either player can either create a meld with that card, or add it to an existing meld
-        bool canUse1 = p1->canCreateMeld(*top) || p1->getMeld(top->getRank());
-        bool canUse2 = p2->canCreateMeld(*top) || p1->getMeld(top->getRank());
+            Player *p1 = players[HUMAN_PLAYER];
+            Player *p2 = players[CPU_PLAYER];
 
-        return canUse1 || canUse2;
+            // determine if either player can either create a meld with that card, or add it to an existing meld
+            bool canUse1 = p1->canCreateMeld(*top) || p1->getMeld(top->getRank()) != nullptr;
+            bool canUse2 = p2->canCreateMeld(*top) || p1->getMeld(top->getRank()) != nullptr;
+
+            return !canUse1 && !canUse2;
+        }
+
+        // otherwise the game can continue
+        return false;
     }
 
     void Game::endGame() {
         started = false;
 
-        // set player points here forcefully
+        // define some stuff for determining who the winner is
         int winner;
         int winnerPoints = 0;
 
@@ -683,12 +707,12 @@ namespace Canasta {
 
             Player *p = players[i];
             int points = p->getPoints();
-            int earned = p->calculatePoints();
-            p->setPoints(earned + points);
+            int total = points + p->calculatePoints();
+            p->setPoints(total);
 
-            if (points > winnerPoints) {
+            if (total > winnerPoints) {
                 winner = i;
-                winnerPoints = p->getPoints();
+                winnerPoints = total;
             }
 
             std::cout << str << " final points: " << p->getPoints() << std::endl;
@@ -750,10 +774,10 @@ namespace Canasta {
 
             // construct temporary meld to display to stdout
             Meld m(canMake);
-            if(canMake == 3)
+            if (canMake == 3)
                 m = BlackThreeMeld();
 
-            for(auto & c : *p->getHand())
+            for (auto &c: *p->getHand())
                 m.addCard(c);
 
             stream << "You can create a meld: " << m << std::endl;
@@ -767,11 +791,11 @@ namespace Canasta {
         if (!melds.empty()) {
             stream << "You can add to melds: ";
 
-            for(auto it = melds.begin(); it != melds.end(); it++) {
-                if(it != melds.begin())
+            for (auto it = melds.begin(); it != melds.end(); it++) {
+                if (it != melds.begin())
                     stream << ", ";
 
-                Meld * m = *it == 3 ? p->getBlackThreeMeld() : p->getMeld(*it);
+                Meld *m = *it == 3 ? p->getBlackThreeMeld() : p->getMeld(*it);
                 stream << *m;
             }
             stream << std::endl;

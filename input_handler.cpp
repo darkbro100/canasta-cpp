@@ -119,4 +119,17 @@ namespace Canasta {
         std::cout << "You can go out this turn! If you want to, type 1. Type anything else to continue playing." << std::endl;\
         return handleInput();
     }
+
+    int displayCoinToss() {
+        std::cout << "Heads or Tails? [0] for heads, [1] for tails." << std::endl;
+        int i = handleInput();
+
+        while(i < 0 || i > 1) {
+            std::cout << "Invalid input." << std::endl;
+            std::cout << "Heads or Tails? [0] for heads, [1] for tails." << std::endl;
+            i = handleInput();
+        }
+
+        return i;
+    }
 }

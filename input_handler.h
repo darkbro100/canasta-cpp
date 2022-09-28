@@ -67,6 +67,12 @@ namespace Canasta {
     int displayShouldGoOut();
 
     /**
+     * Prompts the user to choose heads or tails.
+     * @return 0 if heads, 1 if tails
+     */
+    int displayCoinToss();
+
+    /**
      * Prompts the user to select a card from a given deck. If the player selects an invalid card, the function will recursively call itself and repeat the process until the user selects the correct card.
      * @param deck Pointer to a deck
      * @param initMsg Initial message to send before sending the deck

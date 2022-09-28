@@ -162,6 +162,11 @@ namespace Canasta {
     }
 
     bool Player::drawCard(Deck *deck, bool takeAll) {
+
+        // if there is nothing in the deck then just return false
+        if(deck->empty())
+            return false;
+
         if (takeAll) {
             while (!deck->empty()) {
                 std::shared_ptr<Card> c = deck->drawCard();

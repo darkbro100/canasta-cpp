@@ -28,12 +28,17 @@ namespace Canasta {
             "Player:"
     };
 
+    /**
+     * Serializes a referenced Game object to the given istream
+     * @param game  Reference to game object
+     * @param stream Reference to istream to serialize to
+     */
     void serializeGame(Game &game, std::ostream &stream);
 
     /**
-     * Deserializes an istringstream into the refereneced game object
-     * @param game  Game object to update
-     * @param stream Stream containing serialized game
+     * Deserializes a referenced Game object from the given istream
+     * @param game  Reference to game object
+     * @param stream Reference to istream to deserialize from
      */
     void deserializeGame(Game &game, std::istream &stream);
 
@@ -42,14 +47,14 @@ namespace Canasta {
      * @param file File to read from
      * @param game Game to update
      */
-    void readFile(const char *file, Game &game);
+    void loadGame(const char *file, Game &game);
 
     /**
      * Writes a game's data to a given file.
      * @param file File to write to
      * @param game Game reference
      */
-    void writeFile(const char *file, Game &game);
+    void saveGame(const char *file, Game &game);
 
 }
 

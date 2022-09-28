@@ -1,14 +1,12 @@
 #include <iostream>
 #include "game.h"
 #include "game_serializer.h"
-#include <fstream>
 
 using namespace Canasta;
 
 /**
  * TODO:
- * - Add help menu
- *
+ * - Give player the ability to select heads or tails when doing coin flips for who goes first.
  */
 
 /**
@@ -32,7 +30,7 @@ int main() {
         std::getline(std::cin >> std::ws, fileName);
 
         g.getStockPile()->clear();
-        readFile(fileName.c_str(), g);
+        loadGame(fileName.c_str(), g);
     } else
         g.setup();
 
