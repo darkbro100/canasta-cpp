@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/canasta-cpp.iml" filepath="$PROJECT_DIR$/.idea/canasta-cpp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Canasta.iml" filepath="$PROJECT_DIR$/.idea/modules/Canasta.iml" />
     </modules>
   </component>
 </project>
