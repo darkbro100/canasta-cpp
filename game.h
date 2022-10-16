@@ -31,16 +31,16 @@ namespace Canasta {
         void choosePlayer();
 
         /**
-         * @return The current turn (or round) that we are on
+         * @return The current round
          */
-        int getCurrentTurn();
+        int getCurrentRound();
 
         /**
-         * Sets the current turn (or round) to what is given
+         * Sets the current round to what is given
          *
-         * @param turn Turn to set to
+         * @param r Round to set to
          */
-        void setTurn(int turn);
+        void setRound(int r);
 
         /**
          * @return A pointer to the stock pile
@@ -137,7 +137,7 @@ namespace Canasta {
         bool started;
         int currentPlayer;
         int startingPlayer;
-        int currentTurn;
+        int currentRound;
         Deck *stockPile, *discardPile;
         Player **players;
     };

@@ -109,13 +109,24 @@ namespace Canasta {
 
     bool Player::canCreateMeld(Card card) {
         // create meld on the stack
+        bool redThree = card.isRedThree();
+        bool blackThree = card.isBlackThree();
         Meld m(card.getRank());
         m.addCard(card);
 
         // we need to sort here because of how we check for melds, jokers need to be last in the iteration so it doesn't mess up meld calculations
         std::sort(hand->begin(), hand->end(), std::greater<Card>());
-        for (auto &it: *hand)
-            m.addCard(it);
+        for (auto &it: *hand) {
+            if(redThree && it.isRedThree()) {
+                m.addCard(it);
+            }
+            if(blackThree && it.isBlackThree()) {
+                m.addCard(it);
+            }
+            if(!redThree && !blackThree) {
+                m.addCard(it);
+            }
+        }
 
         return m.count() >= MELD_COUNT;
     }
@@ -164,7 +175,7 @@ namespace Canasta {
     bool Player::drawCard(Deck *deck, bool takeAll) {
 
         // if there is nothing in the deck then just return false
-        if(deck->empty())
+        if (deck->empty())
             return false;
 
         if (takeAll) {
@@ -245,9 +256,8 @@ namespace Canasta {
             else if (m->isCanasta())
                 ret += 300;
 
-            for (auto &c: *m) {
+            for (auto &c: *m)
                 ret += c.getPoints();
-            }
         }
 
         for (auto &c: *hand)
@@ -270,18 +280,36 @@ namespace Canasta {
 
                 //create a quick copy
                 Meld copy(m->getRank());
+                bool redThree = false;
+                bool blackThree = false;
                 std::shared_ptr<Card> top = m->topCard();
-                if (top && top->isRedThree())
-                    copy = RedThreeMeld();
-                else if (top && top->isBlackThree())
-                    copy = BlackThreeMeld();
 
+                // determine if red three "meld" or black 3 meld
+                if (top && top->isRedThree()) {
+                    redThree = true;
+                } else if (top && top->isBlackThree()) {
+                    blackThree = true;
+                }
+
+                //copy data over
                 for (auto &c: *m)
                     copy.addCard(c);
 
                 for (auto &c: *hand) {
                     size_t tmp = copy.count();
-                    copy.addCard(c);
+
+                    // hard coding this stuff because object slicing makes it very inconvenient
+                    if(redThree && c.isRedThree())
+                        copy.addCard(c);
+                    if(blackThree && c.isBlackThree())
+                        copy.addCard(c);
+                    if(!redThree && !blackThree)
+                        copy.addCard(c);
+
+                    // debug
+//                    if((redThree || blackThree) && (tmp != copy.count() && copy.count())) {
+//                        std::cout << "added " << c << std::endl;
+//                    }
 
                     // if the count of the meld has changed, and it's a valid meld, then add it to the return vector
                     if (tmp != copy.count() && copy.count() >= MELD_COUNT)

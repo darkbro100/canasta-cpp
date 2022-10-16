@@ -23,20 +23,22 @@ namespace Canasta {
     /**
      * An array containing the messages that are sent when asking a human player to interact with melds
      */
-    static const char *meldMessages[4] = {
+    static const char *meldMessages[5] = {
             "What would you like to do with melds?\n",
             "Create new meld\n",
             "Add to existing meld\n",
+            "Ask for help\n",
             "Do nothing\n"
     };
 
     /**
      * An array containing the messages that are sent when asking the human player how they want to draw
      */
-    static const char *drawMessages[3] = {
+    static const char *drawMessages[4] = {
             "How would you like to draw?\n",
             "[1] Draw from stock pile\n",
-            "[2] Take from discard pile\n"
+            "[2] Take from discard pile\n",
+            "[3] Ask for help\n"
     };
 
     /**
@@ -71,6 +73,12 @@ namespace Canasta {
      * @return 0 if heads, 1 if tails
      */
     int displayCoinToss();
+
+    /**
+     * Prompts the user if they want to restart and play another round.
+     * @return 1 if they do, 0 if not and the game should stop.
+     */
+    int displayRoundRestart();
 
     /**
      * Prompts the user to select a card from a given deck. If the player selects an invalid card, the function will recursively call itself and repeat the process until the user selects the correct card.

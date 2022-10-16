@@ -15,7 +15,7 @@ namespace Canasta {
     private:
         int rank;
     public:
-        Meld(int rank) : Deck(false), rank(rank) {}
+        explicit Meld(int rank) : Deck(false), rank(rank) {}
 
         void addCard(Card card) override;
 

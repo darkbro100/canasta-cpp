@@ -70,18 +70,18 @@ namespace Canasta {
     MeldCommands displayMeldOptions(bool addNew, bool addExist) {
         std::cout << meldMessages[0];
 
-        for (int i = 1; i < 4; i++) {
-            if (i == 1 && !addNew)
+        int length = sizeof(meldMessages) / sizeof(char*);
+        for (int i = 1; i < length; i++) {
+            if (i == 1 && !addNew) //reference meldMessages to find out what is at index 1 & 2
                 continue;
 
-            if (i == 2 && !addExist)
+            if (i == 2 && !addExist) //reference meldMessages to find out what is at index 1 & 2
                 continue;
 
             std::cout << "[" << i << "] " << meldMessages[i];
         }
 
-        int code = handleInput();
-        code--;
+        int code = handleInput() - 1; //subtract one so we can easily convert to the enum
 
         if(code == MeldCommands::CREATE && !addNew) {
             std::cout << "Unknown command..." << std::endl;
@@ -129,6 +129,16 @@ namespace Canasta {
             std::cout << "Heads or Tails? [0] for heads, [1] for tails." << std::endl;
             i = handleInput();
         }
+
+        return i;
+    }
+
+    int displayRoundRestart() {
+        std::cout << "Would you like to reset and play another round? [1] to restart, [0] to stop playing." << std::endl;
+        int i = handleInput();
+
+        if(i < 0 || i > 1)
+            return displayRoundRestart();
 
         return i;
     }

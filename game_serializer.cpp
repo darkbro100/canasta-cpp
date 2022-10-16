@@ -82,7 +82,7 @@ namespace Canasta {
     }
 
     void serializeGame(Game &game, std::ostream &stream) {
-        int turn = game.getCurrentTurn();
+        int turn = game.getCurrentRound();
         stream << "Round: " << turn << "\n\n";
 
         for (int i = MAX_PLAYERS - 1; i >= 0; i--) {
@@ -143,7 +143,7 @@ namespace Canasta {
                 } else if (strcmp(lastKey, "Round:") == 0) {
                     try {
                         int round = std::stoi(test);
-                        game.setTurn(round);
+                        game.setRound(round);
                     }catch(std::invalid_argument const & e) { } // don't need to print the exception, if stoi throws an exception it means that the input provided for the round/score was invalid
                 } else if (strcmp(lastKey, "Hand:") == 0) {
                     Deck *hand = modifyingPlayer->getHand();

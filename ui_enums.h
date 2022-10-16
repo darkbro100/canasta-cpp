@@ -20,11 +20,13 @@ namespace Canasta {
     };
     enum DrawCommands {
         STOCK,
-        DISCARD
+        DISCARD,
+        DRAW_HELP
     };
     enum MeldCommands {
         CREATE,
         ADD,
+        MELD_HELP,
         NONE
     };
 }

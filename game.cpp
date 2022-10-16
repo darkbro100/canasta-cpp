@@ -27,7 +27,7 @@ namespace Canasta {
     }
 
     Game::Game() {
-        currentTurn = 0;
+        currentRound = 0;
         started = false;
         currentPlayer = -1;
         startingPlayer = -1;
@@ -56,8 +56,7 @@ namespace Canasta {
     }
 
     void Game::setup() {
-        std::cout << "Setting game up..." << std::endl;
-        currentTurn = 1;
+        currentRound = 1;
 
         for (int i = 0; i < MAX_PLAYERS; i++)
             players[i]->setPoints(0);
@@ -87,7 +86,7 @@ namespace Canasta {
             }
         }
 
-        // sort both players hands (for looks lol)
+        // sort both players hands (for looks, but also used when doing meld calculations, hand must be in a certain order)
         for (int i = 0; i < MAX_PLAYERS; i++)
             std::sort(players[i]->getHand()->begin(), players[i]->getHand()->end(), std::greater<Card>());
 
@@ -100,21 +99,11 @@ namespace Canasta {
         }
     }
 
-    int Game::getCurrentTurn() {
-        return currentTurn;
+    int Game::getCurrentRound() {
+        return currentRound;
     }
 
     void Game::choosePlayer() {
-        if (currentTurn == 1) {
-            int toss = displayCoinToss();
-            int chosen = randomPlayer();
-            std::cout << "You chose " << (toss == 0 ? "heads" : "tails") << " and " << (toss == chosen ? "won" : "lost")
-                      << " the coin toss!" << std::endl;
-            currentPlayer = toss == chosen ? HUMAN_PLAYER : CPU_PLAYER;
-            startingPlayer = currentPlayer;
-            return;
-        }
-
         int p1 = players[HUMAN_PLAYER]->getPoints();
         int p2 = players[CPU_PLAYER]->getPoints();
 
@@ -146,7 +135,7 @@ namespace Canasta {
         // if the game cannot progress any further, then we stop it here
         if (shouldStop()) {
             std::cout
-                    << "The game is ending because it is in a state where both players can no longer interact with the stock/discard piles."
+                    << "The round is ending because it is in a state where both players can no longer interact with the stock/discard piles."
                     << std::endl;
             endGame();
             return;
@@ -181,7 +170,7 @@ namespace Canasta {
         Player *p = this->getCurrentPlayer();
 
         // display information about this current turn
-        std::cout << "Current Round: " << currentTurn << std::endl;
+        std::cout << "Current Round: " << currentRound << std::endl;
         std::cout << "Your Hand: " << *players[0]->getHand() << std::endl;
         std::cout << "CPU Hand: " << *players[1]->getHand() << std::endl << std::endl;
 
@@ -245,26 +234,27 @@ namespace Canasta {
         // change to next player
         currentPlayer++;
         if (currentPlayer >= MAX_PLAYERS)
-            currentPlayer = HUMAN_PLAYER;
+            currentPlayer = 0; //reset to beginning of array
 
-        if (currentPlayer == startingPlayer) {
-            currentTurn++;
-            std::cout << "==== ROUND OVER ====" << std::endl;
-            for (int i = 0; i < MAX_PLAYERS; i++) {
-                p = players[i];
-
-                int points = p->getPoints();
-                int earned = p->calculatePoints();
-                p->setPoints(earned + points);
-
-                const char *str = (i == HUMAN_PLAYER ? "Player" : "AI");
-                std::cout << str << " earned " << earned << " points this round." << std::endl;
-                std::cout << str << " earned " << p->getPoints() << " points in total." << std::endl;
-                std::cout << std::endl;
-            }
-            std::cout << std::endl;
-            choosePlayer();
-        }
+        //none of this code is needed as i misinterpreted how rounds and turns worked (ref: during initial demo)
+//        if (currentPlayer == startingPlayer) {
+//            currentRound++;
+//            std::cout << "==== ROUND OVER ====" << std::endl;
+//            for (int i = 0; i < MAX_PLAYERS; i++) {
+//                p = players[i];
+//
+//                int points = p->getPoints();
+//                int earned = p->calculatePoints();
+//                p->setPoints(earned + points);
+//
+//                const char *str = (i == HUMAN_PLAYER ? "Player" : "AI");
+//                std::cout << str << " earned " << earned << " points this round." << std::endl;
+//                std::cout << str << " earned " << p->getPoints() << " points in total." << std::endl;
+//                std::cout << std::endl;
+//            }
+//            std::cout << std::endl;
+//            choosePlayer();
+//        }
     }
 
     bool Game::isStarted() {
@@ -282,7 +272,11 @@ namespace Canasta {
         if (discardTop && !discardTop->canFreezeDiscard() && (canAddToMeld || canUseDiscard)) {
             DrawCommands command = displayDrawOptions();
 
-            if (command == DrawCommands::STOCK) {
+            if (command == DrawCommands::DRAW_HELP) {
+                helpMenu(); // display help menu, recursive call, then return
+                drawTurn(p);
+                return;
+            } else if (command == DrawCommands::STOCK) {
                 goto draw;
             } else if (command == DrawCommands::DISCARD) {
 
@@ -357,6 +351,11 @@ namespace Canasta {
             return;
 
         switch (cmd) {
+            case MELD_HELP: {
+                helpMenu(); // display normal help menu
+                meldTurn(p);
+                return;
+            }
             case ADD: {
                 int selected = selectMeld(p->getMelds(), "Select a meld to add to.");
                 Meld *m = p->getMelds()[selected];
@@ -604,7 +603,7 @@ namespace Canasta {
                 if (lowest == ai->getHand()->end() && !tookDiscard) {
 
                     discardTop = discardPile->topCard();
-                    bool humanCanUseDiscard = human->canCreateMeld(*discardTop);
+                    bool humanCanUseDiscard = !(discardTop == nullptr) && human->canCreateMeld(*discardTop);
 
                     // if the human can take from the discard pile, and we have a wildcard, freeze the discard pile
                     if (humanCanUseDiscard && ai->getHand()->getWildCards() > 0) {
@@ -678,7 +677,8 @@ namespace Canasta {
         if (stockPile->empty()) {
             // if the top card on discard pile froze the pile, then game has to end
             std::shared_ptr<Card> top = discardPile->topCard();
-            if (!top || top->canFreezeDiscard()) //if the top card doesn't exist, or it can freeze the discard pile then the game must stop
+            if (!top ||
+                top->canFreezeDiscard()) //if the top card doesn't exist, or it can freeze the discard pile then the game must stop
                 return true;
 
             Player *p1 = players[HUMAN_PLAYER];
@@ -696,8 +696,6 @@ namespace Canasta {
     }
 
     void Game::endGame() {
-        started = false;
-
         // define some stuff for determining who the winner is
         int winner;
         int winnerPoints = 0;
@@ -715,19 +713,62 @@ namespace Canasta {
                 winnerPoints = total;
             }
 
-            std::cout << str << " final points: " << p->getPoints() << std::endl;
+            std::cout << str << " points: " << p->getPoints() << std::endl;
         }
 
-        const char *str = (winner == HUMAN_PLAYER ? "Player" : "AI");
-        std::cout << "Game over! " << str << " won!" << std::endl;
+        int shouldRestart = displayRoundRestart();
+        if (!shouldRestart) {
+            const char *str = (winner == HUMAN_PLAYER ? "Player" : "AI");
+            std::cout << "Game over! " << str << " won!" << std::endl;
+            started = false;
+        } else {
+            int tmp = currentRound + 1; // increment round counter
+            std::cout << "Setting up new round..." << std::endl;
+
+            // store points
+            int humanPoints = players[HUMAN_PLAYER]->getPoints();
+            int cpuPoints = players[CPU_PLAYER]->getPoints();
+
+            // ensure who goes first next round actually happens
+            startingPlayer = -1;
+            currentPlayer = -1;
+
+            // delete old allocated memory
+            delete stockPile;
+            delete discardPile;
+            delete[] players;
+
+            // reassign everything
+            stockPile = new Deck();
+            discardPile = new Deck(false);
+
+            players = new Player *[MAX_PLAYERS];
+            for (int i = 0; i < MAX_PLAYERS; i++) {
+                players[i] = new Player();
+                players[i]->createMeld(-1, true);
+            }
+
+            // call setup
+            setup();
+            currentRound = tmp; // quick work around because calling #setup will reset currentRound back to 1
+
+            // ensure points are copied over
+            for (int i = 0; i < MAX_PLAYERS; i++) {
+                // ensure points are copied over
+                if (i == CPU_PLAYER)
+                    players[i]->setPoints(cpuPoints);
+                else
+                    players[i]->setPoints(humanPoints);
+            }
+        }
     }
 
     int Game::getCurrentPlayerIndex() {
         return currentPlayer;
     }
 
-    void Game::setTurn(int turn) {
-        this->currentTurn = turn;
+    void Game::setRound(int turn) {
+        this->currentRound = turn;
     }
 
     void Game::setCurrentPlayerIndex(int index) {
@@ -750,11 +791,11 @@ namespace Canasta {
         bool tookDiscard = false;
 
         std::shared_ptr<Card> discardTop = discardPile->topCard();
-        Meld *canAddToMeld = p->getMeld(discardTop->getRank());
-        bool canUseDiscard = p->canCreateMeld(*discardTop);
+        Meld *canAddToMeld = discardTop == nullptr ? nullptr : p->getMeld(discardTop->getRank());
+        bool canUseDiscard = discardTop && p->canCreateMeld(*discardTop);
 
         // if the discard pile is not frozen, and we can do something with it
-        if (!discardTop->canFreezeDiscard() && (canAddToMeld || canUseDiscard)) {
+        if (discardTop && !discardTop->canFreezeDiscard() && (canAddToMeld || canUseDiscard)) {
 
             // usually if you can interact with the discard pile in any kind of way it is beneficial
             if (canAddToMeld) {
@@ -802,7 +843,7 @@ namespace Canasta {
         }
 
         if (p->getHand()->empty()) {
-            stream << "You cannot use the discard pile" << std::endl;
+            stream << "You cannot add a card to the discard pile" << std::endl;
         } else {
             std::vector<Card>::iterator lowest = p->getHand()->end();
             int lowestPoint = 1000;
@@ -822,7 +863,7 @@ namespace Canasta {
             if (lowest == p->getHand()->end() && !tookDiscard) {
 
                 discardTop = discardPile->topCard();
-                bool aiCanUse = ai->canCreateMeld(*discardTop);
+                bool aiCanUse = !(discardTop == nullptr) && ai->canCreateMeld(*discardTop);
 
                 // if the human can take from the discard pile, and we have a wildcard, freeze the discard pile
                 if (aiCanUse && p->getHand()->getWildCards() > 0) {
