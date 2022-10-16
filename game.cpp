@@ -828,6 +828,10 @@ namespace Canasta {
         std::vector<int> melds;
         p->canAddToMelds(melds);
 
+        // erase duplicate values
+        std::sort(melds.begin(), melds.end());
+        melds.erase(std::unique(melds.begin(), melds.end()), melds.end());
+
         // format melds to strstream
         if (!melds.empty()) {
             stream << "You can add to melds: ";
@@ -837,7 +841,7 @@ namespace Canasta {
                     stream << ", ";
 
                 Meld *m = *it == 3 ? p->getBlackThreeMeld() : p->getMeld(*it);
-                stream << *m;
+                stream << "[ " << *m << " ] ";
             }
             stream << std::endl;
         }
