@@ -1,17 +1,16 @@
+//****************************************************
+//* Name:  Paul Guarnieri                         *
+//* Project:  Canasta #1    *
+//* Class:  CMPS 366 01 - Organization of Programming Languages               *
+//* Date:  10-17-2022                   *
+//****************************************************
+
 #include <iostream>
 #include "game.h"
 #include "game_serializer.h"
 
 using namespace Canasta;
 
-/**
- * TODO:
- * - Give player the ability to select heads or tails when doing coin flips for who goes first.
- */
-
-/**
- * TODO: not sure if this will stay the same. dont know if i want to move the keyboard input into its own class/file or keep it how the way it is and pass the char code to the game object and have the game object handle the specific input there
- */
 static char code;
 
 static void handleInput() {
@@ -22,7 +21,7 @@ static void handleInput() {
 int main() {
     Game g;
 
-    printf("Hit [y] if you would like to load in a game from a file\n");
+    printf("Hit [y] if you would like to load in a game from a file. Any other input will create a new game.\n");
     handleInput();
     if (code == 'y') {
         printf("Please enter the name of the file.\n");
