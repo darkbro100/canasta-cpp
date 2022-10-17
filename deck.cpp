@@ -6,7 +6,8 @@
 namespace Canasta {
 
     void Deck::addCard(Card card) {
-        cards.emplace_back(card.getSuit(), card.getRank());
+        cards.emplace(cards.begin(), card.getSuit(), card.getRank());
+//        cards.emplace_back(card.getSuit(), card.getRank());
     }
 
     std::shared_ptr<Card> Deck::drawCard() {

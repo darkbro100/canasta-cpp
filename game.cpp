@@ -321,17 +321,19 @@ namespace Canasta {
         }
 
         draw:
-        std::vector<Card>::iterator oldEnd = p->getHand()->end();
+        size_t oldSize = p->getHand()->count();
+
         bool shouldEnd = p->drawCard(stockPile, false);
         if (shouldEnd) {
             endGame();
             return;
         }
-        std::vector<Card>::iterator newend = p->getHand()->end();
+        size_t newSize = p->getHand()->count();
+        size_t difference = newSize - oldSize;
+
         std::cout << "You drew: ";
-        for (auto it = oldEnd; it != newend; it++) {
-            std::cout << *it << " ";
-        }
+        for (size_t i = 0; i < difference; i++)
+            std::cout << p->getHand()->operator[](i) << " ";
         std::cout << std::endl;
     }
 
@@ -508,17 +510,18 @@ namespace Canasta {
                 discardPile->drawCard();
                 ai->drawCard(discardPile, true);
             } else {
-                std::vector<Card>::iterator oldEnd = ai->getHand()->end();
+                size_t oldSize = ai->getHand()->count();
                 bool shouldEnd = ai->drawCard(stockPile);
                 if (shouldEnd) {
                     endGame();
                     return;
                 }
-                std::vector<Card>::iterator newend = ai->getHand()->end();
+                size_t newSize = ai->getHand()->count();
+                size_t diff = newSize - oldSize;
+
                 std::cout << "The AI could not use the discard pile and drew: ";
-                for (auto it = oldEnd; it != newend; it++) {
-                    std::cout << *it << " ";
-                }
+                for(size_t i = 0; i < diff; i++)
+                    std::cout << ai->getHand()->operator[](i) << " ";
                 std::cout << std::endl;
             }
 
